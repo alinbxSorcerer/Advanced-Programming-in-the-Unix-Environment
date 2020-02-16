@@ -1,13 +1,12 @@
-** 1. UNIX System Overview
-
-*** 1.1. Introduction
+* 1. UNIX System Overview
+* 1.1. Introduction
 
 
 All operating systems provide services for programs they run. Typical services include executing a new program, opening a file, reading a file, allocating a region of memory, getting the current time of day, and so on. The focus of this text is to describe the services provided by various versions of the UNIX operating system.
 
 Describing the UNIX System in a strictly linear fashion, without any forward references to terms that haven't been described yet, is nearly impossible (and would probably be boring). This chapter provides a whirlwind tour of the UNIX System from a programmer's perspective. We'll give some brief descriptions and examples of terms and concepts that appear throughout the text. We describe these features in much more detail in later chapters. This chapter also provides an introduction to and overview of the services provided by the UNIX System for programmers new to this environment.
 
-*** 1.2. UNIX Architecture
+* 1.2. UNIX Architecture
 
 
 In a strict sense, an operating system can be defined as the software that controls the hardware resources of the computer and provides an environment under which programs can run. Generally, we call this software the /kernel/, since it is relatively small and resides at the core of the environment. [[file:part0013.xhtml#ch01fig01][Figure 1.1]] shows a diagram of the UNIX System architecture.
@@ -21,10 +20,10 @@ In a broad sense, an operating system consists of the kernel and all the other s
 
 For example, Linux is the kernel used by the GNU operating system. Some people refer to this combination as the GNU/Linux operating system, but it is more commonly referred to as simply Linux. Although this usage may not be correct in a strict sense, it is understandable, given the dual meaning of the phrase /operating system/. (It also has the advantage of being more succinct.)
 
-*** 1.3. Logging In
+* 1.3. Logging In
 
 
-**** Login Name
+** Login Name
 
 
 When we log in to a UNIX system, we enter our login name, followed by our password. The system then looks up our login name in its password file, usually the file =/etc/passwd=. If we look at our entry in the password file, we see that it's composed of seven colon-separated fields: the login name, encrypted password, numeric user ID (205), numeric group ID (105), a comment field, home directory (=/home/sar=), and shell program (=/bin/ksh=).
@@ -33,7 +32,7 @@ sar:x:205:105:Stephen Rago:/home/sar:/bin/ksh
 
 All contemporary systems have moved the encrypted password to a different file. In [[file:part0018.xhtml#ch06][Chapter 6]], we'll look at these files and some functions to access them.
 
-**** Shells
+** Shells
 
 
 Once we log in, some system information messages are typically displayed, and then we can type commands to the shell program. (Some systems start a window management program when you log in, but you generally end up with a shell running in one of the windows.) A /shell/ is a command-line interpreter that reads user input and executes commands. The user input to a shell is normally from the terminal (an interactive shell) or sometimes from a file (called a /shell script/). The common shells in use are summarized in [[file:part0013.xhtml#ch01fig02][Figure 1.2]].
@@ -61,10 +60,10 @@ Throughout the text, we will use parenthetical notes such as this to describe hi
 
 Throughout this text, we'll show interactive shell examples to execute a program that we've developed. These examples use features common to the Bourne shell, the Korn shell, and the Bourne-again shell.
 
-*** 1.4. Files and Directories
+* 1.4. Files and Directories
 
 
-**** File System
+** File System
 
 
 The UNIX file system is a hierarchical arrangement of directories and files. Everything starts in the directory called /root/, whose name is the single character =/=.
@@ -73,7 +72,7 @@ A /directory/ is a file that contains directory entries. Logically, we can think
 
 We make a distinction between the logical view of a directory entry and the way it is actually stored on disk. Most implementations of UNIX file systems don't store attributes in the directory entries themselves, because of the difficulty of keeping them in synch when a file has multiple hard links. This will become clear when we discuss hard links in [[file:part0016.xhtml#ch04][Chapter 4]].
 
-**** Filename
+** Filename
 
 
 The names in a directory are called /filenames/. The only two characters that cannot appear in a filename are the slash character (=/=) and the null character. The slash separates the filenames that form a pathname (described next) and the null character terminates a pathname. Nevertheless, it's good practice to restrict the characters in a filename to a subset of the normal printing characters. (If we use some of the shell's special characters in the filename, we have to use the shell's quoting mechanism to reference the filename, and this can get complicated.) Indeed, for portability, POSIX.1 recommends restricting filenames to consist of the following characters: letters (=a-z=, =A-Z=), numbers (=0-9=), period (=.=), dash (=-=), and underscore (=_=).
@@ -82,7 +81,7 @@ Two filenames are automatically created whenever a new directory is created: =.=
 
 The Research UNIX System and some older UNIX System V file systems restricted a filename to 14 characters. BSD versions extended this limit to 255 characters. Today, almost all commercial UNIX file systems support at least 255-character filenames.
 
-**** Pathname
+** Pathname
 
 
 A sequence of one or more filenames, separated by slashes and optionally starting with a slash, forms a /pathname/. A pathname that begins with a slash is called an /absolute pathname/; otherwise, it's called a /relative pathname/. Relative pathnames refer to files relative to the current directory. The name for the root of the file system (=/=) is a special-case absolute pathname that has no filename component.
@@ -192,27 +191,27 @@ There are many details to consider in this 20-line program.
 
 • When the program is done, it calls the function =exit= with an argument of 0. The function =exit= terminates a program. By convention, an argument of 0 means OK, and an argument between 1 and 255 means that an error occurred. In [[file:part0020.xhtml#ch08lev1sec5][Section 8.5]], we show how any program, such as a shell or a program that we write, can obtain the =exit= status of a program that it executes.
 
-**** Working Directory
+** Working Directory
 
 
 Every process has a /working directory/, sometimes called the /current working directory/. This is the directory from which all relative pathnames are interpreted. A process can change its working directory with the =chdir= function.
 
 For example, the relative pathname =doc/memo/joe= refers to the file or directory =joe=, in the directory =memo=, in the directory =doc=, which must be a directory within the working directory. From looking just at this pathname, we know that both =doc= and =memo= have to be directories, but we can't tell whether =joe= is a file or a directory. The pathname =/usr/lib/lint= is an absolute pathname that refers to the file or directory =lint= in the directory =lib=, in the directory =usr=, which is in the root directory.
 
-**** Home Directory
+** Home Directory
 
 
 When we log in, the working directory is set to our /home directory/. Our home directory is obtained from our entry in the password file ([[file:part0013.xhtml#ch01lev1sec3][Section 1.3]]).
 
-*** 1.5. Input and Output
+* 1.5. Input and Output
 
 
-**** File Descriptors
+** File Descriptors
 
 
 File descriptors are normally small non-negative integers that the kernel uses to identify the files accessed by a process. Whenever it opens an existing file or creates a new file, the kernel returns a file descriptor that we use when we want to read or write the file.
 
-**** Standard Input, Standard Output, and Standard Error
+** Standard Input, Standard Output, and Standard Error
 
 
 By convention, all shells open three descriptors whenever a new program is run: standard input, standard output, and standard error. If nothing special is done, as in the simple command
@@ -225,7 +224,7 @@ ls > file.list
 
 executes the =ls= command with its standard output redirected to the file named =file.list=.
 
-**** Unbuffered I/O
+** Unbuffered I/O
 
 
 Unbuffered I/O is provided by the functions =open=, =read=, =write=, =lseek=, and =close=. These functions all work with file descriptors.
@@ -284,7 +283,7 @@ then the file named =infile= will be copied to the file named =outfile=.
 
 In [[file:part0015.xhtml#ch03][Chapter 3]], we describe the unbuffered I/O functions in more detail.
 
-**** Standard I/O
+** Standard I/O
 
 
 The standard I/O functions provide a buffered interface to the unbuffered I/O functions. Using standard I/O relieves us from having to choose optimal buffer sizes, such as the =BUFFSIZE= constant in [[file:part0013.xhtml#ch01fig04][Figure 1.4]]. The standard I/O functions also simplify dealing with lines of input (a common occurrence in UNIX applications). The =fgets= function, for example, reads an entire line. The =read= function, in contrast, reads a specified number of bytes. As we shall see in [[file:part0017.xhtml#ch05lev1sec4][Section 5.4]], the standard I/O library provides functions that let us control the style of buffering used by the library.
@@ -322,15 +321,15 @@ main(void)
 
 The function =getc= reads one character at a time, and this character is written by =putc=. After the last byte of input has been read, =getc= returns the constant =EOF= (defined in =<stdio.h>=). The standard I/O constants =stdin= and =stdout= are also defined in the =<stdio.h>= header and refer to the standard input and standard output.
 
-*** 1.6. Programs and Processes
+* 1.6. Programs and Processes
 
 
-**** Program
+** Program
 
 
 A /program/ is an executable file residing on disk in a directory. A program is read into memory and is executed by the kernel as a result of one of the seven =exec= functions. We'll cover these functions in [[file:part0020.xhtml#ch08lev1sec10][Section 8.10]].
 
-**** Processes and Process ID
+** Processes and Process ID
 
 
 An executing instance of a program is called a /process/, a term used on almost every page of this text. Some operating systems use the term /task/ to refer to a program that is being executed.
@@ -369,7 +368,7 @@ hello world from process ID 854
 
 When this program runs, it calls the function =getpid= to obtain its process ID. As we shall see later, =getpid= returns a =pid_t= data type. We don't know its size; all we know is that the standards guarantee that it will fit in a long integer. Because we have to tell =printf= the size of each argument to be printed, we have to cast the value to the largest data type that it might use (in this case, a long integer). Although most process IDs will fit in an =int=, using a =long= promotes portability.
 
-**** Process Control
+** Process Control
 
 
 There are three primary functions for process control: =fork=, =exec=, and =waitpid=. (The =exec= function has seven variants, but we often refer to them collectively as simply the =exec= function.)
@@ -453,7 +452,7 @@ $                                       t
 
 The notation =^D= is used to indicate a control character. Control characters are special characters formed by holding down the control key---often labeled =Control= or =Ctrl=---on your keyboard and then pressing another key at the same time. Control-D, or =^D=, is the default end-of-file character. We'll see many more control characters when we discuss terminal I/O in [[file:part0030.xhtml#ch18][Chapter 18]].
 
-**** Threads and Thread IDs
+** Threads and Thread IDs
 
 
 Usually, a process has only one thread of control---one set of machine instructions executing at a time. Some problems are easier to solve when more than one thread of control can operate on different parts of the problem. Additionally, multiple threads of control can exploit the parallelism possible on multiprocessor systems.
@@ -464,7 +463,7 @@ Like processes, threads are identified by IDs. Thread IDs, however, are local to
 
 Functions to control threads parallel those used to control processes. Because threads were added to the UNIX System long after the process model was established, however, the thread model and the process model have some complicated interactions, as we shall see in [[file:part0024.xhtml#ch12][Chapter 12]].
 
-*** 1.7. Error Handling
+* 1.7. Error Handling
 
 
 When an error occurs in one of the UNIX System functions, a negative value is often returned, and the integer =errno= is usually set to a value that tells why. For example, the =open= function returns either a non-negative file descriptor if all is OK or --1 if an error occurs. An error from =open= has about 15 possible =errno= values, such as file doesn't exist, permission problem, and so on. Some functions use a convention other than returning a negative value. For example, most functions that return a pointer to an object return a null pointer to indicate an error.
@@ -552,7 +551,7 @@ we are able to tell which of the three programs generated a particular error mes
 
 Instead of calling either =strerror= or =perror= directly, the examples in this text use the error functions shown in [[file:part0036.xhtml#app02][Appendix B]]. These functions let us use the variable argument list facility of ISO C to handle error conditions with a single C statement.
 
-**** Error Recovery
+** Error Recovery
 
 
 The errors defined in =<errno.h>= can be divided into two categories: fatal and nonfatal. A fatal error has no recovery action. The best we can do is print an error message on the user's screen or to a log file, and then exit. Nonfatal errors, on the other hand, can sometimes be dealt with more robustly. Most nonfatal errors are temporary, such as a resource shortage, and might not occur when there is less activity on the system.
@@ -563,9 +562,9 @@ The typical recovery action for a resource-related nonfatal error is to delay an
 
 Ultimately, it is up to the application developer to determine the cases where an application can recover from an error. If a reasonable recovery strategy can be used, we can improve the robustness of our application by avoiding an abnormal exit.
 
-*** 1.8. User Identification
+* 1.8. User Identification
 
-**** User ID
+** User ID
 
 
 The /user ID/ from our entry in the password file is a numeric value that identifies us to the system. This user ID is assigned by the system administrator when our login name is assigned, and we cannot change it. The user ID is normally assigned to be unique for every user. We'll see how the kernel uses the user ID to check whether we have the appropriate permissions to perform certain operations.
@@ -574,7 +573,7 @@ We call the user whose user ID is 0 either /root/ or the /superuser/. The entry 
 
 Client versions of Mac OS X ship with the superuser account disabled; server versions ship with the account already enabled. Instructions are available on Apple's Web site describing how to enable it. See =http://support.apple.com/kb/HT1528=.
 
-**** Group ID
+** Group ID
 
 
 Our entry in the password file also specifies our numeric /group ID/. This, too, is assigned by the system administrator when our login name is assigned. Typically, the password file contains multiple entries that specify the same group ID. Groups are normally used to collect users together into projects or departments. This allows the sharing of resources, such as files, among members of the same group. We'll see in [[file:part0016.xhtml#ch04lev1sec5][Section 4.5]] that we can set the permissions on a file so that all members of a group can access the file, whereas others outside the group cannot.
@@ -613,12 +612,12 @@ We call the functions =getuid= and =getgid= to return the user ID and the group 
 $ ./a.out
 uid = 205, gid = 105
 
-**** Supplementary Group IDs
+** Supplementary Group IDs
 
 
 In addition to the group ID specified in the password file for a login name, most versions of the UNIX System allow a user to belong to other groups. This practice started with 4.2BSD, which allowed a user to belong to up to 16 additional groups. These /supplementary group IDs/ are obtained at login time by reading the file =/etc/group= and finding the first 16 entries that list the user as a member. As we shall see in the next chapter, POSIX requires that a system support at least 8 supplementary groups per process, but most systems support at least 16.
 
-*** 1.9. Signals
+* 1.9. Signals
 
 
 Signals are a technique used to notify a process that some condition has occurred. For example, if a process divides by zero, the signal whose name is =SIGFPE= (floating-point exception) is sent to the process. The process has three choices for dealing with the signal.
@@ -689,7 +688,7 @@ To catch this signal, the program needs to call the =signal= function, specifyin
 
 In [[file:part0022.xhtml#ch10][Chapter 10]], we'll take a long look at signals, as most nontrivial applications deal with them.
 
-*** 1.10. Time Values
+* 1.10. Time Values
 
 
 Historically, UNIX systems have maintained two different time values:
@@ -729,7 +728,7 @@ The output format from the =time= command depends on the shell being used, becau
 
 In [[file:part0020.xhtml#ch08lev1sec17][Section 8.17]], we'll see how to obtain these three times from a running process. The general topic of times and dates is covered in [[file:part0018.xhtml#ch06lev1sec10][Section 6.10]].
 
-*** 1.11. System Calls and Library Functions
+* 1.11. System Calls and Library Functions
 
 
 All operating systems provide service points through which programs request services from the kernel. All implementations of the UNIX System provide a well-defined, limited number of entry points directly into the kernel called /system calls/ (recall [[file:part0013.xhtml#ch01fig01][Figure 1.1]]). Version 7 of the Research UNIX System provided about 50 system calls, 4.4BSD provided about 110, and SVR4 had around 120. The exact number of system calls varies depending on the operating system version. More recent systems have seen incredible growth in the number of supported system calls. Linux 3.2.0 has 380 system calls and FreeBSD 8.0 has over 450.
@@ -762,14 +761,14 @@ The process control system calls (=fork=, =exec=, and =waitpid=) are usually inv
 
 To define the interface to the UNIX System that most programmers use, we have to describe both the system calls and some of the library functions. If we described only the =sbrk= system call, for example, we would skip the more programmer-friendly =malloc= library function that many applications use. In this text, we'll use the term /function/ to refer to both system calls and library functions, except when the distinction is necessary.
 
-*** 1.12. Summary
+* 1.12. Summary
 
 
 This chapter has provided a short tour of the UNIX System. We've described some of the fundamental terms that we'll encounter over and over again. We've seen numerous small examples of UNIX programs to give us a feel for what the remainder of the text talks about.
 
 The next chapter is about standardization of the UNIX System and the effect of work in this area on current systems. Standards, particularly the ISO C standard and the POSIX.1 standard, will affect the rest of the text.
 
-*** Exercises
+* Exercises
 
 
 1.1 Verify on your system that the directories dot and dot-dot are not the same, except in the root directory.

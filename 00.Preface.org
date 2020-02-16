@@ -1,5 +1,5 @@
 * Preface to the First Edition
-** Introduction
+* Introduction
 
 This book describes the programming interface to the Unix system---the system call interface and many of the functions provided in the standard C library. It is intended for anyone writing programs that run under Unix.
 
@@ -7,13 +7,13 @@ Like most operating systems, Unix provides numerous services to the programs tha
 
 The system call interface and the library routines have traditionally been described in Sections 2 and 3 of the /Unix Programmer's Manual/. This book is not a duplication of these sections. Examples and rationale are missing from the /Unix Programmer's Manual/, and that's what this book provides.
 
-** Unix Standards
+* Unix Standards
 
 The proliferation of different versions of Unix during the 1980s has been tempered by the various international standards that were started during the late 1980s. These include the ANSI standard for the C programming language, the IEEE POSIX family (still being developed), and the X/Open portability guide.
 
 This book also describes these standards. But instead of just describing the standards by themselves, we describe them in relation to popular implementations of the standards---System V Release 4 and the forthcoming 4.4BSD. This provides a real-world description, which is often lacking from the standard itself and from books that describe only the standard.
 
-** Organization of the Book
+* Organization of the Book
 
 This book is divided into six parts:
 # 整本书的架构一直没有变动
@@ -31,7 +31,7 @@ This book is divided into six parts:
 
 A reading familiarity with C would be beneficial as would some experience using Unix. No prior programming experience with Unix is assumed. This text is intended for programmers familiar with Unix and programmers familiar with some other operating system who wish to learn the details of the services provided by most Unix systems.
 
-** Examples in the Text
+* Examples in the Text
 
 
 This book contains many examples---approximately 10,000 lines of source code. All the examples are in the C programming language. Furthermore, these examples are in ANSI C. You should have a copy of the /Unix Programmer's Manual/ for your system handy while reading this book, since reference is made to it for some of the more esoteric and implementation-dependent features.
@@ -40,7 +40,7 @@ Almost every function and system call is demonstrated with a small, complete pro
 
 All the examples have been included in the text directly from their source files. A machine-readable copy of all the examples is available via anonymous FTP from the Internet host =ftp.uu.net= in the file =published/books/stevens.advprog.tar.Z=. Obtaining the source code allows you to modify the programs from this text and experiment with them on your system.
 
-** Systems Used to Test the Examples
+* Systems Used to Test the Examples
 
 
 Unfortunately all operating systems are moving targets. Unix is no exception. The following diagram shows the recent evolution of the various versions of System V and 4.xBSD.
@@ -65,7 +65,7 @@ Most of the examples in this text have been run on four different versions of Un
 
 Numerous timing tests are provided in the text and the systems used for the test are identified.
 
-** Acknowledgments
+* Acknowledgments
 
 
 Once again I am indebted to my family for their love, support, and many lost weekends over the past year and a half. Writing a book is, in many ways, a family affair. Thank you Sally, Bill, Ellen, and David.
@@ -89,7 +89,7 @@ W. Richard Stevens
 =rstevens@kohala.com=
 
 =http://www.kohala.com/~rstevens=
-** Publish
+* Publish
 #+begin_src ipython :session apue :results output
 import glob
 import os
@@ -122,7 +122,16 @@ print(os.listdir())
 
 #+RESULTS:
 : # Out[68]:
-** Clean Chapters
+
+#+begin_src ipython :session apue :results output
+!pandoc --wrap=none 00.Preface.org -o ~/Public/nikola_post/posts/读书评注:APUE.rst
+
+#+end_src
+
+#+RESULTS:
+: pandoc: /home/gaowei/Public/nikola_post/posts/读书评注:APUE.rst: openFile: does not exist (No such file or directory)
+
+* Clean Chapters
 #+begin_src ipython :session apue :results output
 import re
 import glob
@@ -166,7 +175,7 @@ for org in orgs:
 #+end_src
 
 #+RESULTS:
-** Add chapter names
+* Add chapter names
 
 #+begin_src ipython :session apue :results output
 print(cs)

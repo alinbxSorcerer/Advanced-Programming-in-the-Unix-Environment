@@ -1,7 +1,7 @@
-** 9. Process Relationships
+* 9. Process Relationships
 
 
-*** 9.1. Introduction
+** 9.1. Introduction
 
 
 We learned in the previous chapter that there are relationships between processes. First, every process has a parent process (the initial kernel-level process is usually its own parent). The parent is notified when the child terminates, and the parent can obtain the child's exit status. We also mentioned process groups when we described the =waitpid= function ([[file:part0020.xhtml#ch08lev1sec6][Section 8.6]]) and explained how we can wait for any process in a process group to terminate.
@@ -10,7 +10,7 @@ In this chapter, we'll look at process groups in more detail and the concept of 
 
 It is impossible to describe these relationships without talking about signals, and to talk about signals, we need many of the concepts in this chapter. If you are unfamiliar with the UNIX System signal mechanism, you may want to skim through [[file:part0022.xhtml#ch10][Chapter 10]] at this point.
 
-*** 9.2. Terminal Logins
+** 9.2. Terminal Logins
 
 
 Let's start by looking at the programs that are executed when we log in to a UNIX system. In early UNIX systems, such as Version 7, users logged in using dumb terminals that were connected to the host with hard-wired connections. The terminals were either local (directly connected) or remote (connected through a modem). In either case, these logins came through a terminal device driver in the kernel. For example, the common devices on PDP-11s were DH-11s and DZ-11s. A host had a fixed number of these terminal devices, so there was a known upper limit on the number of simultaneous logins.
@@ -21,7 +21,7 @@ Today, some platforms allow you to start a windowing system after logging in, wh
 
 The procedure that we now describe is used to log in to a UNIX system using a terminal. The procedure is similar regardless of the type of terminal we use---it could be a character-based terminal, a graphical terminal emulating a simple character-based terminal, or a graphical terminal running a windowing system.
 
-**** BSD Terminal Logins
+*** BSD Terminal Logins
 
 
 The BSD terminal login procedure has not changed much over the past 35 years. The system administrator creates a file, usually =/etc/ttys=, that has one line per terminal device. Each line specifies the name of the device and other parameters that are passed to the =getty= program. One parameter is the baud rate of the terminal, for example. When the system is bootstrapped, the kernel creates process ID 1, the =init= process, and it is =init= that brings the system up in multiuser mode. The =init= process reads the file =/etc/ttys= and, for every terminal device that allows a login, does a =fork= followed by an =exec= of the program =getty=. This gives us the processes shown in [[file:part0021.xhtml#ch09fig01][Figure 9.1]].
@@ -79,7 +79,7 @@ At this point, our login shell is running. Its parent process ID is the original
 
 Our login shell now reads its start-up files (=.profile= for the Bourne shell and Korn shell; =.bash_profile=, =.bash_login=, or =.profile= for the GNU Bourne-again shell; and =.cshrc= and =.login= for the C shell). These start-up files usually change some of the environment variables and add many other variables to the environment. For example, most users set their own =PATH= and often prompt for the actual terminal type (=TERM=). When the start-up files are done, we finally get the shell's prompt and can enter commands.
 
-**** Mac OS X Terminal Logins
+*** Mac OS X Terminal Logins
 
 
 On Mac OS X, the terminal login process follows essentially the same steps as in the BSD login process, since Mac OS X is based in part on FreeBSD. With Mac OS X, however, there are some differences:
@@ -88,7 +88,7 @@ On Mac OS X, the terminal login process follows essentially the same steps as in
 
 • We are presented with a graphical-based login screen from the start.
 
-**** Linux Terminal Logins
+*** Linux Terminal Logins
 
 
 The Linux login procedure is very similar to the BSD procedure. Indeed, the Linux =login= command is derived from the 4.3BSD =login= command. The main difference between the BSD login procedure and the Linux login procedure is in the way the terminal configuration is specified.
@@ -99,14 +99,14 @@ Other Linux distributions, such as recent Ubuntu distributions, ship with a vers
 
 Depending on the version of =getty= in use, the terminal characteristics are specified either on the command line (as with =agetty=) or in the file =/etc/gettydefs= (as with =mgetty=).
 
-**** Solaris Terminal Logins
+*** Solaris Terminal Logins
 
 
 Solaris supports two forms of terminal logins: (a) =getty= style, as described previously for BSD, and (b) =ttymon= logins, a feature introduced with SVR4. Normally, =getty= is used for the console, and =ttymon= is used for other terminal logins.
 
 The =ttymon= command is part of a larger facility termed SAF, the Service Access Facility. The goal of the SAF was to provide a consistent way to administer services that provide access to a system. (See Chapter 6 of Rago [[[file:part0038.xhtml#bib01_56][1993]]] for more details.) For our purposes, we end up with the same picture as in [[file:part0021.xhtml#ch09fig03][Figure 9.3]], with a different set of steps between =init= and the login shell. =init= is the parent of =sac= (the service access controller), which does a =fork= and =exec= of the =ttymon= program when the system enters multiuser state. The =ttymon= program monitors all the terminal ports listed in its configuration file and does a =fork= when we enter our login name. This child of =ttymon= does an =exec= of =login=, and =login= prompts us for our password. Once this is done, =login exec=s our login shell, and we're at the position shown in [[file:part0021.xhtml#ch09fig03][Figure 9.3]]. One difference is that the parent of our login shell is now =ttymon=, whereas the parent of the login shell from a =getty= login is =init=.
 
-*** 9.3. Network Logins
+** 9.3. Network Logins
 
 
 The main (physical) difference between logging in to a system through a serial terminal and logging in to a system through a network is that the connection between the terminal and the computer isn't point-to-point. In this case, =login= is simply a service available, just like any other network service, such as FTP or SMTP.
@@ -115,7 +115,7 @@ With the terminal logins that we described in the previous section, =init= knows
 
 To allow the same software to process logins over both terminal logins and network logins, a software driver called a /pseudo terminal/ is used to emulate the behavior of a serial terminal and map terminal operations to network operations, and vice versa. (In [[file:part0031.xhtml#ch19][Chapter 19]], we'll talk about pseudo terminals in detail.)
 
-**** BSD Network Logins
+*** BSD Network Logins
 
 
 In BSD, a single process waits for most network connections: the =inetd= process, sometimes called the /Internet superserver/. In this section, we'll look at the sequence of processes involved in network logins for a BSD system. We are not interested in the detailed network programming aspects of these processes; refer to Stevens, Fenner, and Rudoff [[[file:part0038.xhtml#bib01_63][2004]]] for all the details.
@@ -140,26 +140,26 @@ Obviously, a lot is going on between the pseudo terminal device driver and the a
 
 The important thing to understand is that whether we log in through a terminal ([[file:part0021.xhtml#ch09fig03][Figure 9.3]]) or a network ([[file:part0021.xhtml#ch09fig05][Figure 9.5]]), we have a login shell with its standard input, standard output, and standard error connected to either a terminal device or a pseudo terminal device. We'll see in the coming sections that this login shell is the start of a POSIX.1 session, and that the terminal or pseudo terminal is the controlling terminal for the session.
 
-**** Mac OS X Network Logins
+*** Mac OS X Network Logins
 
 
 Logging in to a Mac OS X system over a network is identical to logging in to a BSD system, because Mac OS X is based partially on FreeBSD. However, on Mac OS X, the =telnet= daemon is run from =launchd=.
 
 By default, the =telnet= daemon is disabled on Mac OS X (although it can be enabled with the =launchctl=(1) command). The preferred way to perform a network login on Mac OS X is with =ssh=, the secure shell command.
 
-**** Linux Network Logins
+*** Linux Network Logins
 
 
 Network logins under Linux are the same as under BSD, except that some distributions use an alternative =inetd= process called the extended Internet services daemon, =xinetd=. The =xinetd= process provides a finer level of control over services it starts compared to =inetd=.
 
-**** Solaris Network Logins
+*** Solaris Network Logins
 
 
 The scenario for network logins under Solaris is almost identical to the steps under BSD and Linux. An =inetd= server is used that is similar in concept to the BSD version, except that the Solaris version runs as a /restarter/ in the Service Management Facility (SMF). A restarter is a daemon that has the responsibility to start and monitor other daemon processes, and restart them if they fail. Although the =inetd= server is started by the master restarter in the SMF, the master restarter is started by =init= and we end up with the same overall picture as in [[file:part0021.xhtml#ch09fig05][Figure 9.5]].
 
 The Solaris Service Management Facility is a framework that manages and monitors system services and provides a way to recover from failures affecting system services. For more details on the Service Management Facility, see Adams [[[file:part0038.xhtml#bib01_02][2005]]] and the Solaris manual pages =smf=(5) and =inetd=(1M).
 
-*** 9.4. Process Groups
+** 9.4. Process Groups
 
 
 In addition to having a process ID, each process belongs to a process group. We'll encounter process groups again when we discuss signals in [[file:part0022.xhtml#ch10][Chapter 10]].
@@ -222,7 +222,7 @@ In most job-control shells, this function is called after a =fork= to have the p
 
 When we discuss signals, we'll see how we can send a signal to either a single process (identified by its process ID) or a process group (identified by its process group ID). Similarly, the =waitpid= function from [[file:part0020.xhtml#ch08lev1sec6][Section 8.6]] lets us wait for either a single process or one process from a specified process group.
 
-*** 9.5. Sessions
+** 9.5. Sessions
 
 
 A session is a collection of one or more process groups. For example, we could have the arrangement shown in [[file:part0021.xhtml#ch09fig06][Figure 9.6]]. Here we have three process groups in a single session.
@@ -273,7 +273,7 @@ Returns: session leader's process group ID if OK, --1 on error
 
 If /pid/ is 0, =getsid= returns the process group ID of the calling process's session leader. For security reasons, some implementations may restrict the calling process from obtaining the process group ID of the session leader if /pid/ doesn't belong to the same session as the caller.
 
-*** 9.6. Controlling Terminal
+** 9.6. Controlling Terminal
 
 
 Sessions and process groups have a few other characteristics.
@@ -320,7 +320,7 @@ decrypts the file =salaries= and pipes the output to the print spooler. Because 
 
 There are known ways to break the encoding used by the =crypt= program. See Garfinkel et al. [[[file:part0038.xhtml#bib01_23][2003]]] for more details on encrypting files.
 
-*** 9.7. tcgetpgrp, tcsetpgrp, and tcgetsid Functions
+** 9.7. tcgetpgrp, tcsetpgrp, and tcgetsid Functions
 
 
 We need a way to tell the kernel which process group is the foreground process group, so that the terminal device driver knows where to send the terminal input and the terminal-generated signals ([[file:part0021.xhtml#ch09fig07][Figure 9.7]]).
@@ -359,7 +359,7 @@ Returns: session leader's process group ID if OK, --1 on error
 
 Applications that need to manage controlling terminals can use =tcgetsid= to identify the session ID of the controlling terminal's session leader (which is equivalent to the session leader's process group ID).
 
-*** 9.8. Job Control
+** 9.8. Job Control
 
 
 Job control is a feature that was added to BSD around 1980. This feature allows us to start multiple jobs (groups of processes) from a single terminal and to control which jobs can access the terminal and which jobs are run in the background. Job control requires three forms of support:
@@ -455,7 +455,7 @@ When we disallow background jobs from writing to the controlling terminal, =cat=
 
 Is job control necessary or desirable? Job control was originally designed and implemented before windowing terminals were widespread. Some people claim that a well-designed windowing system removes any need for job control. Some complain that the implementation of job control---requiring support from the kernel, the terminal driver, the shell, and some applications---is a hack. Some use job control with a windowing system, claiming a need for both. Regardless of your opinion, job control is a required feature of POSIX.1.
 
-*** 9.9. Shell Execution of Programs
+** 9.9. Shell Execution of Programs
 
 
 Let's examine how the shells execute programs and how this relates to the concepts of process groups, controlling terminals, and sessions. To do this, we'll use the =ps= command again.
@@ -618,7 +618,7 @@ the results are similar, but now =ps= and =cat1= are placed in the same backgrou
 
 Note that the order in which a shell creates processes can differ depending on the particular shell in use.
 
-*** 9.10. Orphaned Process Groups
+** 9.10. Orphaned Process Groups
 
 
 We've mentioned that a process whose parent terminates is called an orphan and is inherited by the =init= process. We now look at entire process groups that can be orphaned and see how POSIX.1 handles this situation.
@@ -713,7 +713,7 @@ Finally, note that our child was placed in a background process group when the p
 
 We'll see another example of orphaned process groups in [[file:part0031.xhtml#ch19lev1sec5][Section 19.5]] with the =pty= program.
 
-*** 9.11. FreeBSD Implementation
+** 9.11. FreeBSD Implementation
 
 
 Having talked about the various attributes of a process, process group, session, and controlling terminal, it's worth looking at how all this can be implemented. We'll look briefly at the implementation used by FreeBSD. Some details of the SVR4 implementation of these features can be found in Williams [[[file:part0038.xhtml#bib01_73][1989]]]. [[file:part0021.xhtml#ch09fig13][Figure 9.13]] shows the various data structures used by FreeBSD.
@@ -762,14 +762,14 @@ The =proc= structure contains all the information for a single process.
 
 Finally, we have the =vnode= structure. This structure is allocated when the controlling terminal device is opened. All references to =/dev/tty= in a process go through this =vnode= structure.
 
-*** 9.12. Summary
+** 9.12. Summary
 
 
 This chapter has described the relationships between groups of processes---sessions, which are made up of process groups. Job control is a feature supported by most UNIX systems today, and we've described how it's implemented by a shell that supports job control. The controlling terminal for a process, =/dev/tty=, is also involved in these process relationships.
 
 We've made numerous references to the signals that are used in all these process relationships. The next chapter continues the discussion of signals, looking at all the UNIX System signals in detail.
 
-*** Exercises
+** Exercises
 
 
 9.1 Refer back to our discussion of the =utmp= and =wtmp= files in [[file:part0018.xhtml#ch06lev1sec8][Section 6.8]]. Why are the logout records written by the =init= process? Is this handled the same way for a network login?
@@ -799,7 +799,7 @@ To find the foreground process group of a particular session, the kernel has to 
 
 Finally, we have the =vnode= structure. This structure is allocated when the controlling terminal device is opened. All references to =/dev/tty= in a process go through this =vnode= structure.
 
-*** 9.12. Summary
+** 9.12. Summary
     :PROPERTIES:
     :CUSTOM_ID: ch09lev1sec12
     :END:
@@ -808,7 +808,7 @@ This chapter has described the relationships between groups of processes---sessi
 
 We've made numerous references to the signals that are used in all these process relationships. The next chapter continues the discussion of signals, looking at all the UNIX System signals in detail.
 
-*** Exercises
+** Exercises
     :PROPERTIES:
     :CUSTOM_ID: ch09lev1sec13
     :END:

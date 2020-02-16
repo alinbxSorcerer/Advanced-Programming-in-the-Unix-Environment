@@ -1,13 +1,13 @@
-** 6. System Data Files and Information
+* 6. System Data Files and Information
 
-*** 6.1. Introduction
+** 6.1. Introduction
 
 
 A UNIX system requires numerous data files for normal operation: the password file =/etc/passwd= and the group file =/etc/group= are two files that are frequently used by various programs. For example, the password file is used every time a user logs in to a UNIX system and every time someone executes an =ls -l= command.
 
 Historically, these data files have been ASCII text files and were read with the standard I/O library. But for larger systems, a sequential scan through the password file becomes time consuming. We want to be able to store these data files in a format other than ASCII text, but still provide an interface for an application program that works with any file format. The portable interfaces to these data files are the subject of this chapter. We also cover the system identification functions and the time and date functions.
 
-*** 6.2. Password File
+** 6.2. Password File
 
 
 The UNIX System's password file, called the user database by POSIX.1, contains the fields shown in [[file:part0018.xhtml#ch06fig01][Figure 6.1]]. These fields are contained in a =passwd= structure that is defined in =<pwd.h>=.
@@ -136,7 +136,7 @@ getpwnam(const char *name)
 
 The call to =setpwent= at the beginning of this function is self-defense: we ensure that the files are rewound, in case the caller has already opened them by calling =getpwent=. We call =endpwent= when we're done, because neither =getpwnam= nor =getpwuid= should leave any of the files open.
 
-*** 6.3. Shadow Passwords
+** 6.3. Shadow Passwords
 
 
 The encrypted password is a copy of the user's password that has been put through a one-way encryption algorithm. Because this algorithm is one-way, we can't guess the original password from the encrypted version.
@@ -176,7 +176,7 @@ void endspent(void);
 
 On FreeBSD 8.0 and Mac OS X 10.6.8, there is no shadow password structure. The additional account information is stored in the password file (refer back to [[file:part0018.xhtml#ch06fig01][Figure 6.1]]).
 
-*** 6.4. Group File
+** 6.4. Group File
 
 
 The UNIX System's group file, called the group database by POSIX.1, contains the fields shown in [[file:part0018.xhtml#ch06fig04][Figure 6.4]]. These fields are contained in a =group= structure that is defined in =<grp.h>=.
@@ -226,7 +226,7 @@ These three functions are not part of the base POSIX.1 standard. They are define
 
 The =setgrent= function opens the group file, if it's not already open, and rewinds it. The =getgrent= function reads the next entry from the group file, opening the file first, if it's not already open. The =endgrent= function closes the group file.
 
-*** 6.5. Supplementary Group IDs
+** 6.5. Supplementary Group IDs
 
 
 The use of groups in the UNIX System has changed over time. With Version 7, each user belonged to a single group at any point in time. When we logged in, we were assigned the real group ID corresponding to the numerical group ID in our password file entry. We could change this at any point by executing =newgrp=(1). If the =newgrp= command succeeded (refer to the manual page for the permission rules), our real group ID was changed to the new group's ID, and this value was used for all subsequent file access permission checks. We could always go back to our original group by executing =newgrp= without any arguments.
@@ -277,7 +277,7 @@ The =setgroups= function is usually called from the =initgroups= function, which
 
 The =initgroups= function is called by only a few programs. The =login=(1) program, for example, calls it when we log in.
 
-*** 6.6. Implementation Differences
+** 6.6. Implementation Differences
 
 
 We've already discussed the shadow password file supported by Linux and Solaris. FreeBSD and Mac OS X store encrypted passwords differently. [[file:part0018.xhtml#ch06fig05][Figure 6.5]] summarizes how the four platforms covered in this book store user and group information.
@@ -293,7 +293,7 @@ Although Linux and Solaris support similar shadow password interfaces, there are
 
 On many systems, the user and group databases are implemented using the Network Information Service (NIS). This allows administrators to edit a master copy of the databases and distribute them automatically to all servers in an organization. Client systems contact servers to look up information about users and groups. NIS+ and the Lightweight Directory Access Protocol (LDAP) provide similar functionality. Many systems control the method used to administer each type of information through the =/etc/nsswitch.conf= configuration file.
 
-*** 6.7. Other Data Files
+** 6.7. Other Data Files
 
 
 We've discussed only two of the system's data files so far: the password file and the group file. Numerous other files are used by UNIX systems in normal day-to-day operation. For example, the BSD networking software has one data file for the services provided by the various network servers (=/etc/services=), one for the protocols (=/etc/protocols=), and one for the networks (=/etc/networks=). Fortunately, the interfaces to these various files are like the ones we've already described for the password and group files.
@@ -315,7 +315,7 @@ Additionally, if the data file supports some form of keyed lookup, routines are 
 
 Under Solaris, the last four data files in [[file:part0018.xhtml#ch06fig06][Figure 6.6]] are symbolic links to files of the same name in the directory =/etc/inet=. Most UNIX System implementations have additional functions that are like these, but the additional functions tend to deal with system administration files and are specific to each implementation.
 
-*** 6.8. Login Accounting
+** 6.8. Login Accounting
 
 
 Two data files provided with most UNIX systems are the =utmp= file, which keeps track of all the users currently logged in, and the =wtmp= file, which keeps track of all logins and logouts. With Version 7, one type of record was written to both files, a binary record consisting of the following structure:
@@ -336,7 +336,7 @@ The detailed format of these records in Solaris is given in the =utmpx=(4) manua
 
 On FreeBSD 8.0 and Linux 3.2.0, the =utmp=(5) manual page gives the format of their versions of these login records. The pathnames of these two files are =/var/run/utmp= and =/var/log/wtmp=. On Mac OS X 10.6.8, the =utmp= and =wtmp= files do not exist. As of Mac OS X 10.5, the information found in the =wtmp= file can be obtained from the system logging facility, and the =utmpx= file contains information about the active login sessions.
 
-*** 6.9. System Identification
+** 6.9. System Identification
 
 
 POSIX.1 defines the =uname= function to return information on the current host and operating system.
@@ -398,7 +398,7 @@ If the host is connected to a TCP/IP network, the host name is normally the full
 
 There is also a =hostname=(1) command that can fetch or set the host name. (The host name is set by the superuser using a similar function, =sethostname=.) The host name is normally set at bootstrap time from one of the start-up files invoked by =/etc/rc= or =init=.
 
-*** 6.10. Time and Date Routines
+** 6.10. Time and Date Routines
 
 
 The basic time service provided by the UNIX kernel counts the number of seconds that have passed since the Epoch: 00:00:00 January 1, 1970, Coordinated Universal Time (UTC). In [[file:part0013.xhtml#ch01lev1sec10][Section 1.10]], we said that these seconds are represented in a =time_t= data type, and we call them /calendar times/. These calendar times represent both the time and the date. The UNIX System has always differed from other operating systems in (a) keeping time in UTC instead of the local time, (b) automatically handling conversions, such as daylight saving time, and (c) keeping the time and date as a single quantity.
@@ -652,12 +652,12 @@ We mentioned that the three functions in [[file:part0018.xhtml#ch06fig09][Figure
 
 More information on the =TZ= environment variable can be found in the =tzset=(3) manual page.
 
-*** 6.11. Summary
+** 6.11. Summary
 
 
 The password file and the group file are used on all UNIX systems. We've looked at the various functions that read these files. We've also talked about shadow passwords, which can enhance system security. Supplementary group IDs provide a way to participate in multiple groups at the same time. We also looked at how similar functions are provided by most systems to access other system-related data files. We discussed the POSIX.1 functions that programs can use to identify the system on which they are running. We finished the chapter by looking at the time and date functions provided by ISO C and the Single UNIX Specification.
 
-*** Exercises
+** Exercises
 
 
 6.1 If the system uses a shadow file and we need to obtain the encrypted password, how do we do so?
@@ -693,12 +693,12 @@ We mentioned that the three functions in [[file:part0018.xhtml#ch06fig09][Figure
 
 More information on the =TZ= environment variable can be found in the =tzset=(3) manual page.
 
-*** 6.11. Summary
+** 6.11. Summary
 
 
 The password file and the group file are used on all UNIX systems. We've looked at the various functions that read these files. We've also talked about shadow passwords, which can enhance system security. Supplementary group IDs provide a way to participate in multiple groups at the same time. We also looked at how similar functions are provided by most systems to access other system-related data files. We discussed the POSIX.1 functions that programs can use to identify the system on which they are running. We finished the chapter by looking at the time and date functions provided by ISO C and the Single UNIX Specification.
 
-*** Exercises
+** Exercises
 
 
 6.1 If the system uses a shadow file and we need to obtain the encrypted password, how do we do so?

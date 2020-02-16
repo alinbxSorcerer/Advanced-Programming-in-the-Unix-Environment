@@ -1,12 +1,12 @@
-** 14. Advanced I/O
+* 14. Advanced I/O
 
 
-*** 14.1. Introduction
+** 14.1. Introduction
 
 
 This chapter covers numerous topics and functions that we lump under the term /advanced I/O/: nonblocking I/O, record locking, I/O multiplexing (the =select= and =poll= functions), asynchronous I/O, the =readv= and =writev= functions, and memory-mapped I/O (=mmap=). We need to cover these topics before describing interprocess communication in [[file:part0027.xhtml#ch15][Chapter 15]], [[file:part0029.xhtml#ch17][Chapter 17]], and many of the examples in later chapters.
 
-*** 14.2. Nonblocking I/O
+** 14.2. Nonblocking I/O
 
 
 In [[file:part0022.xhtml#ch10lev1sec5][Section 10.5]], we said that system calls are divided into two categories: the “slow” ones and all the others. The slow system calls are those that can block forever. They include
@@ -143,14 +143,14 @@ In this example, the program issues more than 9,000 =write= calls, even though o
 
 Sometimes, we can avoid using nonblocking I/O by designing our applications to use multiple threads (see [[file:part0023.xhtml#ch11][Chapter 11]]). We can allow individual threads to block in I/O calls if we can continue to make progress in other threads. This can sometimes simplify the design, as we shall see in [[file:part0033.xhtml#ch21][Chapter 21]]; at other times, however, the overhead of synchronization can add more complexity than is saved from using threads.
 
-*** 14.3. Record Locking
+** 14.3. Record Locking
 
 
 What happens when two people edit the same file at the same time? In most UNIX systems, the final state of the file corresponds to the last process that wrote the file. In some applications, however, such as a database system, a process needs to be certain that it alone is writing to a file. To provide this capability for processes that need it, commercial UNIX systems provide record locking. (In [[file:part0032.xhtml#ch20][Chapter 20]], we develop a database library that uses record locking.)
 
 /Record locking/ is the term normally used to describe the ability of a process to prevent other processes from modifying a region of a file while the first process is reading or modifying that portion of the file. Under the UNIX System, “record” is a misnomer; the UNIX kernel does not have a notion of records in a file. A better term is /byte-range locking/, given that it is a range of a file (possibly the entire file) that is locked.
 
-**** History
+*** History
 
 
 One of the criticisms of early UNIX systems was that they couldn't be used to run database systems, because they did not support locking portions of files. As UNIX systems found their way into business computing environments, various groups added support for record locking (differently, of course).
@@ -168,7 +168,7 @@ We describe the difference between advisory locking and mandatory locking later 
 
 Record locking was originally added to Version 7 in 1980 by John Bass. The system call entry into the kernel was a function named =locking=. This function provided mandatory record locking and propagated through many versions of System III. Xenix systems picked up this function, and some Intel-based System V derivatives, such as OpenServer 5, continued to support it in a Xenix-compatibility library.
 
-**** fcntl Record Locking
+*** fcntl Record Locking
 
 
 Let's repeat the prototype for the =fcntl= function from [[file:part0015.xhtml#ch03lev1sec14][Section 3.14]].
@@ -412,7 +412,7 @@ child: got the lock, byte 1
 
 When a deadlock is detected, the kernel has to choose one process to receive the error return. In this example, the parent was chosen, but this is an implementation detail. On some systems, the child always receives the error. On other systems, the parent always gets the error. On some systems, you might even see the errors split between the child and the parent as multiple lock attempts are made.
 
-**** Implied Inheritance and Release of Locks
+*** Implied Inheritance and Release of Locks
 
 
 Three rules govern the automatic inheritance and release of record locks.
@@ -437,7 +437,7 @@ to open the same file on another descriptor.
 
 *3.* Locks are inherited by a new program across an =exec=. Note, however, that if the close-on-exec flag is set for a file descriptor, all locks for the underlying file are released when the descriptor is closed as part of an =exec=.
 
-**** FreeBSD Implementation
+*** FreeBSD Implementation
 
 
 Let's take a brief look at the data structures used in the FreeBSD implementation. This should help clarify rule 1, which states that locks are associated with a process and a file.
@@ -496,7 +496,7 @@ Alternatively, we could define the =lockfile= function in terms of the =write_lo
 
 #define lockfile(fd) write_lock((fd), 0, SEEK_SET, 0)
 
-**** Locks at End of File
+*** Locks at End of File
 
 
 We need to use caution when locking or unlocking byte ranges relative to the end of file. Most implementations convert an =l_whence= value of =SEEK_CUR= or =SEEK_END= into an absolute file offset, using =l_start= and the file's current position or current length. Often, however, we need to specify a lock relative to the file's current length, but we can't call =fstat= to obtain the current file size, since we don't have a lock on the file. (There's a chance that another process could change the file's length between the call to =fstat= and the lock call.)
@@ -519,7 +519,7 @@ When a portion of a file is locked, the kernel converts the offset specified int
 
 If we intended to remove the lock covering the byte we wrote in the first write, we could have specified the length as --1. Negative length values represent the bytes before the specified offset.
 
-**** Advisory versus Mandatory Locking
+*** Advisory versus Mandatory Locking
 
 
 Consider a library of database access routines. If all the functions in the library handle record locking in a consistent way, then we say that any set of processes using these functions to access a database are /cooperating processes/. It is feasible for these database access functions to use advisory locking if they are the only ones being used to access the database. But advisory locking doesn't prevent some other process that has write permission for the database file from writing whatever it wants to the database file. This rogue process would be an uncooperating process, since it's not using the accepted method (the library of database functions) to access the database.
@@ -661,7 +661,7 @@ A small front-end program of this type can be written, but it doesn't work. The 
 
 We'll use record locking in [[file:part0032.xhtml#ch20][Chapter 20]] in our database library to provide concurrent access to multiple processes. We'll also provide some timing measurements to see how record locking affects a process.
 
-*** 14.4. I/O Multiplexing
+** 14.4. I/O Multiplexing
 
 
 When we read from one descriptor and write to another, we can use blocking I/O in a loop, such as
@@ -702,7 +702,7 @@ POSIX specifies that =<sys/select.h>= be included to pull the information for =s
 
 I/O multiplexing was provided with the =select= function in 4.2BSD. This function has always worked with any descriptor, although its main use has been for terminal I/O and network I/O. SVR3 added the =poll= function when the STREAMS mechanism was added. Initially, =poll= worked only with STREAMS devices. In SVR4, support was added to allow =poll= to work on any descriptor.
 
-**** 14.4.1. select and pselect Functions
+*** 14.4.1. select and pselect Functions
 
 
 The =select= function lets us do I/O multiplexing under all POSIX-compatible platforms. The arguments we pass to =select= tell the kernel
@@ -865,7 +865,7 @@ The =pselect= function is identical to =select=, with the following exceptions.
 
 • An optional signal mask argument is available with =pselect=. If /sigmask/ is =NULL=, =pselect= behaves as =select= does with respect to signals. Otherwise, /sigmask/ points to a signal mask that is atomically installed when =pselect= is called. On return, the previous signal mask is restored.
 
-**** 14.4.2. poll Function
+*** 14.4.2. poll Function
 
 
 The =poll= function is similar to =select=, but the programmer interface is different. This function was originally introduced in System V to support the STREAMS subsystem, but we are able to use it with any type of file descriptor.
@@ -927,14 +927,14 @@ It is important to realize the difference between an end of file and a hangup. I
 
 As with =select=, whether a descriptor is blocking doesn't affect whether =poll= blocks.
 
-***** Interruptibility of select and poll
+**** Interruptibility of select and poll
 
 
 When the automatic restarting of interrupted system calls was introduced with 4.2BSD ([[file:part0022.xhtml#ch10lev1sec5][Section 10.5]]), the =select= function was never restarted. This characteristic continues with most systems even if the =SA_RESTART= option is specified. But under SVR4, if =SA_RESTART= was specified, even =select= and =poll= were automatically restarted. To prevent this from catching us when we port software to systems derived from SVR4, we'll always use the =signal_intr= function ([[file:part0022.xhtml#ch10fig19][Figure 10.19]]) if the signal could interrupt a call to =select= or =poll=.
 
 None of the implementations described in this book restart =poll= or =select= when a signal is received, even if the =SA_RESTART= flag is used.
 
-*** 14.5. Asynchronous I/O
+** 14.5. Asynchronous I/O
 
 
 Using =select= and =poll=, as described in the previous section, is a synchronous form of notification. The system doesn't tell us anything until we ask (by calling either =select= or =poll=). As we saw in [[file:part0022.xhtml#ch10][Chapter 10]], signals provide an asynchronous form of notification that something has happened. All systems derived from BSD and System V provide some form of asynchronous I/O, using a signal (=SIGPOLL= in System V; =SIGIO= in BSD) to notify the process that something of interest has happened on a descriptor. As mentioned in the previous section, these forms of asynchronous I/O are limited: they don't work with all file types and they allow the use of only one signal. If we enable more than one descriptor for asynchronous I/O, we cannot tell which descriptor the signal corresponds to when the signal is delivered.
@@ -953,7 +953,7 @@ We can't really call the non-asynchronous I/O function calls “synchronous,” 
 
 • Recovering from errors can be difficult. For example, if we submit multiple asynchronous writes and one fails, how should we proceed? If the writes are related, we might have to undo the ones that succeeded.
 
-**** 14.5.1. System V Asynchronous I/O
+*** 14.5.1. System V Asynchronous I/O
 
 
 System V provides a limited form of asynchronous I/O that works only with STREAMS devices and STREAMS pipes. The System V asynchronous I/O signal is =SIGPOLL=.
@@ -967,7 +967,7 @@ Interfaces related to the STREAMS mechanism were marked obsolescent in SUSv4, so
 
 In addition to calling =ioctl= to specify the conditions that should generate the =SIGPOLL= signal, we have to establish a signal handler for this signal. Recall from [[file:part0022.xhtml#ch10fig01][Figure 10.1]] that the default action for =SIGPOLL= is to terminate the process, so we should establish the signal handler before calling =ioctl=.
 
-**** 14.5.2. BSD Asynchronous I/O
+*** 14.5.2. BSD Asynchronous I/O
 
 
 Asynchronous I/O in BSD-derived systems is a combination of two signals: =SIGIO= and =SIGURG=. The former is the general asynchronous I/O signal, and the latter is used only to notify the process that out-of-band data has arrived on a network connection.
@@ -984,7 +984,7 @@ Step 3 can be performed only on descriptors that refer to terminals or networks,
 
 For the =SIGURG= signal, we need perform only steps 1 and 2. =SIGURG= is generated only for descriptors that refer to network connections that support out-of-band data, such as TCP connections.
 
-**** 14.5.3. POSIX Asynchronous I/O
+*** 14.5.3. POSIX Asynchronous I/O
 
 
 The POSIX asynchronous I/O interfaces give us a consistent way to perform asynchronous I/O, regardless of the type of file. These interfaces were adopted from the real-time draft standard, which themselves were an option in the Single UNIX Specification. In Version 4, the Single UNIX Specification moved these interfaces to the base, so they are now required to be supported by all platforms.
@@ -1432,7 +1432,7 @@ When we write a block to the output file, we retain the same offset at which we 
 
 We don't use asynchronous notification in this example, because it is easier to use a synchronous programming model. If we had something else to do while the I/O operations were in progress, then the additional work could be folded into the =for= loop. If we needed to prevent this additional work from delaying the task of translating the file, however, then we might have to structure the code to use some form of asynchronous notification. With multiple tasks, we need to prioritize the tasks before deciding how the program should be structured.
 
-*** 14.6. readv and writev Functions
+** 14.6. readv and writev Functions
 
 
 The =readv= and =writev= functions let us read into and write from multiple noncontiguous buffers in a single function call. These operations are called /scatter read/ and /gather write/.
@@ -1498,7 +1498,7 @@ Don't infer too much about the relative performance of Linux and Mac OS X from t
 
 In summary, we should always try to use the fewest number of system calls necessary to get the job done. If we are writing small amounts of data, we will find it less expensive to copy the data ourselves and use a single =write= instead of using =writev=. We might find, however, that the performance benefits aren't worth the extra complexity cost needed to manage our own staging buffers.
 
-*** 14.7. readn and writen Functions
+** 14.7. readn and writen Functions
 
 
 Pipes, FIFOs, and some devices---notably terminals and networks---have the following two properties.
@@ -1585,7 +1585,7 @@ writen(int fd, const void *ptr, size_t n)
 
 Note that if we encounter an error and have previously read or written any data, we return the amount of data transferred instead of the error. Similarly, if we reach the end of file while reading, we return the number of bytes copied to the caller's buffer if we already read some data successfully and have not yet satisfied the amount requested.
 
-*** 14.8. Memory-Mapped I/O
+** 14.8. Memory-Mapped I/O
 
 
 Memory-mapped I/O lets us map a file on disk into a buffer in memory so that, when we fetch bytes from the buffer, the corresponding bytes of the file are read. Similarly, when we store data in the buffer, the corresponding bytes are automatically written to the file. This lets us perform I/O without using =read= or =write=.
@@ -1795,7 +1795,7 @@ Krieger, Stumm, and Unrau [[[file:part0038.xhtml#bib01_38][1992]]] describe an a
 
 We return to memory-mapped I/O in [[file:part0027.xhtml#ch15lev1sec9][Section 15.9]], showing an example of how it can be used to provide shared memory between related processes.
 
-*** 14.9. Summary
+** 14.9. Summary
 
 
 In this chapter, we've described numerous advanced I/O functions, many of which are used in the examples in later chapters:
@@ -1812,7 +1812,7 @@ In this chapter, we've described numerous advanced I/O functions, many of which 
 
 • Memory-mapped I/O (=mmap=)
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch14ans01][14.1]]* Write a test program that illustrates your system's behavior when a process is blocked while trying to write lock a range of a file and additional read-lock requests are made. Is the process requesting a write lock starved by the processes read locking the file?
@@ -1853,7 +1853,7 @@ Krieger, Stumm, and Unrau [[[file:part0038.xhtml#bib01_38][1992]]] describe an a
 
 We return to memory-mapped I/O in [[file:part0027.xhtml#ch15lev1sec9][Section 15.9]], showing an example of how it can be used to provide shared memory between related processes.
 
-*** 14.9. Summary
+** 14.9. Summary
 
 
 In this chapter, we've described numerous advanced I/O functions, many of which are used in the examples in later chapters:
@@ -1870,7 +1870,7 @@ In this chapter, we've described numerous advanced I/O functions, many of which 
 
 • Memory-mapped I/O (=mmap=)
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch14ans01][14.1]]* Write a test program that illustrates your system's behavior when a process is blocked while trying to write lock a range of a file and additional read-lock requests are made. Is the process requesting a write lock starved by the processes read locking the file?

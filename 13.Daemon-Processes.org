@@ -1,7 +1,7 @@
-** 13. Daemon Processes
+* 13. Daemon Processes
 
 
-*** 13.1. Introduction
+** 13.1. Introduction
 
 
 Daemons are processes that live for a long time. They are often started when the system is bootstrapped and terminate only when the system is shut down. Because they don't have a controlling terminal, we say that they run in the background. UNIX systems have numerous daemons that perform day-to-day activities.
@@ -10,7 +10,7 @@ In this chapter, we look at the process structure of daemons and explore how to 
 
 For a discussion of the historical background of the term /daemon/ as it applies to computer systems, see Raymond [[[file:part0038.xhtml#bib01_57][1996]]].
 
-*** 13.2. Daemon Characteristics
+** 13.2. Daemon Characteristics
 
 
 Let's look at some common system daemons and how they relate to the concepts of process groups, controlling terminals, and sessions that we described in [[file:part0021.xhtml#ch09][Chapter 9]]. The =ps=(1) command prints the status of various processes in the system. There are a multitude of options---consult your system's manual for all the details. We'll execute
@@ -79,7 +79,7 @@ The =cron= daemon executes commands at regularly scheduled dates and times. Nume
 
 Note that most of the daemons run with superuser (root) privileges. None of the daemons has a controlling terminal: the terminal name is set to a question mark. The kernel daemons are started without a controlling terminal. The lack of a controlling terminal in the user-level daemons is probably the result of the daemons having called =setsid=. Most of the user-level daemons are process group leaders and session leaders, and are the only processes in their process group and session. (The one exception is =rsyslogd=.) Finally, note that the parent of the user-level daemons is the =init= process.
 
-*** 13.3. Coding Rules
+** 13.3. Coding Rules
 
 
 Some basic rules to coding a daemon prevent unwanted interactions from happening. We state these rules here and then show a function, =daemonize=, that implements them.
@@ -204,7 +204,7 @@ sar   13800     1 13799 13799 ?   ./a.out
 
 We can also use =ps= to verify that no active process exists with ID 13799. This means that our daemon is in an orphaned process group ([[file:part0021.xhtml#ch09lev1sec10][Section 9.10]]) and is not a session leader and, therefore, has no chance of allocating a controlling terminal. This is a result of performing the second =fork= in the =daemonize= function. We can see that our daemon has been initialized correctly.
 
-*** 13.4. Error Logging
+** 13.4. Error Logging
 
 
 One problem a daemon has is how to handle error messages. It can't simply write to standard error, since it shouldn't have a controlling terminal. We don't want all the daemons writing to the console device, because on many workstations the console device runs a windowing system. We also don't want each daemon writing its own error messages into a separate file. It would be a headache for anyone administering the system to keep up with which daemon writes to which log file and to check these files on a regular basis. A central daemon error-logging facility is required.
@@ -303,7 +303,7 @@ All four platforms described in this book provide =vsyslog=, but this function i
 
 Most =syslogd= implementations will queue messages for a short time. If a duplicate message arrives during this period, the =syslog= daemon will not write it to the log. Instead, the daemon prints a message similar to “last message repeated /N/ times.”
 
-*** 13.5. Single-Instance Daemons
+** 13.5. Single-Instance Daemons
 
 
 Some daemons are implemented so that only a single copy of the daemon should be running at a time for proper operation. Such a daemon might need exclusive access to a device, for example. In the case of the =cron= daemon, if multiple instances were running, each copy might try to start a single scheduled operation, resulting in duplicate operations and probably an error.
@@ -369,7 +369,7 @@ Each copy of the daemon will try to create a file and write its process ID in th
 
 We need to truncate the file, because the previous instance of the daemon might have had a process ID larger than ours, with a larger string length. For example, if the previous instance of the daemon was process ID 12345, and the new instance is process ID 9999, when we write the process ID to the file, we will be left with 99995 in the file. Truncating the file prevents data from the previous daemon appearing as if it applies to the current daemon.
 
-*** 13.6. Daemon Conventions
+** 13.6. Daemon Conventions
 
 
 Several common conventions are followed by daemons in the UNIX System.
@@ -584,7 +584,7 @@ main(int argc, char *argv[])
 
 After initializing the daemon, we install signal handlers for =SIGHUP= and =SIGTERM=. We can either place the reread logic in the signal handler or just set a flag in the handler and have the main thread of the daemon do all the work instead.
 
-*** 13.7. Client--Server Model
+** 13.7. Client--Server Model
 
 
 A common use for a daemon process is as a server process. Indeed, in [[file:part0025.xhtml#ch13fig02][Figure 13.2]], we can call the =syslogd= process a server that has messages sent to it by user processes (clients) using a UNIX domain datagram socket.
@@ -621,14 +621,14 @@ set_cloexec(int fd)
 
 *Figure 13.9* Set close-on-exec flag
 
-*** 13.8. Summary
+** 13.8. Summary
 
 
 Daemon processes are running all the time on most UNIX systems. Initializing our own process to run as a daemon takes some care and an understanding of the process relationships described in [[file:part0021.xhtml#ch09][Chapter 9]]. In this chapter, we developed a function that can be called by a daemon process to initialize itself correctly.
 
 We also discussed the ways a daemon can log error messages, since a daemon normally doesn't have a controlling terminal. We discussed several conventions that daemons follow on most UNIX systems and showed examples of how to implement some of these conventions.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch13ans01][13.1]]* As we might guess from [[file:part0025.xhtml#ch13fig02][Figure 13.2]], when the =syslog= facility is initialized, either by calling =openlog= directly or on the first call to =syslog=, the special device file for the UNIX domain datagram socket, =/dev/log=, has to be opened. What happens if the user process (the daemon) calls =chroot= before calling =openlog=?
@@ -662,14 +662,14 @@ set_cloexec(int fd)
 
 *Figure 13.9* Set close-on-exec flag
 
-*** 13.8. Summary
+** 13.8. Summary
 
 
 Daemon processes are running all the time on most UNIX systems. Initializing our own process to run as a daemon takes some care and an understanding of the process relationships described in [[file:part0021.xhtml#ch09][Chapter 9]]. In this chapter, we developed a function that can be called by a daemon process to initialize itself correctly.
 
 We also discussed the ways a daemon can log error messages, since a daemon normally doesn't have a controlling terminal. We discussed several conventions that daemons follow on most UNIX systems and showed examples of how to implement some of these conventions.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch13ans01][13.1]]* As we might guess from [[file:part0025.xhtml#ch13fig02][Figure 13.2]], when the =syslog= facility is initialized, either by calling =openlog= directly or on the first call to =syslog=, the special device file for the UNIX domain datagram socket, =/dev/log=, has to be opened. What happens if the user process (the daemon) calls =chroot= before calling =openlog=?

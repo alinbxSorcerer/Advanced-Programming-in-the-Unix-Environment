@@ -4,10 +4,3 @@
 [[./Images/cover01284.jpeg]]
 
 
-#+begin_src ipython :session apue :results output
-# publish
-! git init
-! git add . ; git commit -m "publish"
-! git remote add origin git@github.com:alinbxSorcerer/Advanced-Programming-in-the-Unix-Environment.git
-! git push -u origin master
-#+end_src

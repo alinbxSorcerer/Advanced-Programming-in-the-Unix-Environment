@@ -1,14 +1,14 @@
-** 12. Thread Control
+* 12. Thread Control
 
 
-*** 12.1. Introduction
+** 12.1. Introduction
 
 
 In [[file:part0023.xhtml#ch11][Chapter 11]], we learned the basics about threads and thread synchronization. In this chapter, we will learn the details of controlling thread behavior. We will look at thread attributes and synchronization primitive attributes, which we ignored in the previous chapter in favor of the default behavior.
 
 We will follow this with a look at how threads can keep data private from other threads in the same process. Then we will wrap up the chapter with a look at how some process-based system calls interact with threads.
 
-*** 12.2. Thread Limits
+** 12.2. Thread Limits
 
 
 We discussed the =sysconf= function in [[file:part0014.xhtml#ch02lev2sec15][Section 2.5.4]]. The Single UNIX Specification defines several limits associated with the operation of threads, which we didn't show in [[file:part0014.xhtml#ch02fig11][Figure 2.11]]. As with other system limits, the thread limits can be queried using =sysconf=. [[file:part0024.xhtml#ch12fig01][Figure 12.1]] summarizes these limits.
@@ -25,7 +25,7 @@ As with the other limits reported by =sysconf=, use of these limits is intended 
 
 Note that although an implementation may not provide access to these limits, that doesn't mean that the limits don't exist. It just means that the implementation doesn't provide us with a way to get at them using =sysconf=.
 
-*** 12.3. Thread Attributes
+** 12.3. Thread Attributes
 
 
 The pthread interface allows us to fine-tune the behavior of threads and synchronization objects by setting various attributes associated with each object. Generally, the functions for managing these attributes follow the same pattern:
@@ -187,12 +187,12 @@ The Single UNIX Specification defines several other optional thread attributes i
 
 Threads have other attributes not represented by the =pthread_attr_t= structure: the cancelability state and the cancelability type. We discuss them in [[file:part0024.xhtml#ch12lev1sec7][Section 12.7]].
 
-*** 12.4. Synchronization Attributes
+** 12.4. Synchronization Attributes
 
 
 Just as threads have attributes, so too do their synchronization objects. In [[file:part0023.xhtml#ch11lev2sec7][Section 11.6.7]], we saw how spin locks have one attribute called the /process-shared/ attribute. In this section, we discuss the attributes of mutexes, reader--writer locks, condition variables, and barriers.
 
-**** 12.4.1. Mutex Attributes
+*** 12.4.1. Mutex Attributes
 
 
 Mutex attributes are represented by a =pthread_mutexattr_t= structure. Whenever we initialized a mutex in [[file:part0023.xhtml#ch11][Chapter 11]], we accepted the default attributes by using the =PTHREAD_MUTEX_INITIALIZER= constant or by calling the =pthread_mutex_init= function with a null pointer for the argument that points to the mutex attribute structure.
@@ -505,7 +505,7 @@ Additionally, on systems that don't define =CLOCK_REALTIME=, we provide our own 
 
 The caller of =timeout= needs to hold a mutex to check the condition and to schedule the =retry= function as an atomic operation. The =retry= function will try to lock the same mutex. Unless the mutex is recursive, a deadlock will occur if the =timeout= function calls =retry= directly.
 
-**** 12.4.2. Reader--Writer Lock Attributes
+*** 12.4.2. Reader--Writer Lock Attributes
 
 
 Reader--writer locks also have attributes, similar to mutexes. We use =pthread_rwlockattr_init= to initialize a =pthread_rwlockattr_t= structure and =pthread_rwlockattr_destroy= to deinitialize the structure.
@@ -545,7 +545,7 @@ Both return: 0 if OK, error number on failure
 
 Although POSIX defines only one reader--writer lock attribute, implementations are free to define additional, nonstandard ones.
 
-**** 12.4.3. Condition Variable Attributes
+*** 12.4.3. Condition Variable Attributes
 
 
 The Single UNIX Specification currently defines two attributes for condition variables: the /process-shared/ attribute and the /clock/ attribute. As with the other attribute objects, a pair of functions initialize and deinitialize condition variable attribute objects.
@@ -604,7 +604,7 @@ Both return: 0 if OK, error number on failure
 
 Curiously, the Single UNIX Specification doesn't define the /clock/ attribute for any of the other attribute objects that have a wait function with a timeout.
 
-**** 12.4.4. Barrier Attributes
+*** 12.4.4. Barrier Attributes
 
 
 Barriers have attributes, too. We can use the =pthread_barrierattr_init= function to initialize a barrier attributes object and the =pthread_barrierattr_destroy= function to deinitialize a barrier attributes object.
@@ -644,7 +644,7 @@ Both return: 0 if OK, error number on failure
 
 The value of the /process-shared/ attribute can be either =PTHREAD_PROCESS_SHARED= (accessible to threads from multiple processes) or =PTHREAD_PROCESS_PRIVATE= (accessible to only threads in the process that initialized the barrier).
 
-*** 12.5. Reentrancy
+** 12.5. Reentrancy
 
 
 We discussed reentrant functions and signal handlers in [[file:part0022.xhtml#ch10lev1sec6][Section 10.6]]. Threads are similar to signal handlers when it comes to reentrancy. In both cases, multiple threads of control can potentially call the same function at the same time.
@@ -805,7 +805,7 @@ We could have used a reader--writer lock to allow multiple concurrent calls to =
 
 Even though we can make =getenv_r= thread-safe, that doesn't mean that it is reentrant with respect to signal handlers. If we were to use a nonrecursive mutex, we would run the risk that a thread would deadlock itself if it called =getenv_r= from a signal handler. If the signal handler interrupted the thread while it was executing =getenv_r=, we would already be holding =env_mutex= locked, so another attempt to lock it would block, causing the thread to deadlock. Thus we must use a recursive mutex to prevent other threads from changing the data structures while we look at them and to prevent deadlocks from signal handlers. The problem is that the pthread functions are not guaranteed to be async-signal safe, so we can't use them to make another function async-signal safe.
 
-*** 12.6. Thread-Specific Data
+** 12.6. Thread-Specific Data
 
 
 Thread-specific data, also known as thread-private data, is a mechanism for storing and finding data associated with a particular thread. The reason we call the data thread-specific, or thread-private, is that we'd like each thread to access its own separate copy of the data, without worrying about synchronizing access with other threads.
@@ -1006,7 +1006,7 @@ We use =pthread_once= to ensure that only one key is created for the thread-spec
 
 Note that although this version of =getenv= is thread-safe, it is not async-signal safe. Even if we made the mutex recursive, we could not make it reentrant with respect to signal handlers because it calls =malloc=, which itself is not async-signal safe.
 
-*** 12.7. Cancel Options
+** 12.7. Cancel Options
 
 
 Two thread attributes that are not included in the =pthread_attr_t= structure are the /cancelability state/ and the /cancelability type/. These attributes affect the behavior of a thread in response to a call to =pthread_cancel= ([[file:part0023.xhtml#ch11lev1sec5][Section 11.5]]).
@@ -1075,7 +1075,7 @@ The =pthread_setcanceltype= function sets the cancellation type to /type/ (eithe
 
 Asynchronous cancellation differs from deferred cancellation in that the thread can be canceled at any time. The thread doesn't necessarily need to hit a cancellation point for it to be canceled.
 
-*** 12.8. Threads and Signals
+** 12.8. Threads and Signals
 
 
 Dealing with signals can be complicated even with a process-based paradigm. Introducing threads into the picture makes things even more complicated.
@@ -1240,7 +1240,7 @@ interrupt
 interrupt
 ^ $                now terminate with quit character
 
-*** 12.9. Threads and fork
+** 12.9. Threads and fork
 
 
 When a thread calls =fork=, a copy of the entire process address space is made for the child. Recall the discussion of copy-on-write in [[file:part0020.xhtml#ch08lev1sec3][Section 8.3]]. The child is an entirely different process from the parent, and as long as neither one makes changes to its memory contents, copies of the memory pages can be shared between parent and child.
@@ -1417,7 +1417,7 @@ Although the =pthread_atfork= mechanism is intended to make locking state consis
 
 • If an application calls =fork= in a signal handler (which is legal, because =fork= is async-signal safe), then the fork handlers registered by =pthread_atfork= can call only async-signal safe functions, or else the results are undefined.
 
-*** 12.10. Threads and I/O
+** 12.10. Threads and I/O
 
 
 We introduced the =pread= and =pwrite= functions in [[file:part0015.xhtml#ch03lev1sec11][Section 3.11]]. These functions are helpful in a multithreaded environment, because all threads in a process share the same file descriptors.
@@ -1434,12 +1434,12 @@ To solve this problem, we can use =pread= to make the setting of the offset and 
 
 Using =pread=, we can ensure that thread A reads the record at offset 300, whereas thread B reads the record at offset 700. We can use =pwrite= to solve the problem of concurrent threads writing to the same file.
 
-*** 12.11. Summary
+** 12.11. Summary
 
 
 Threads provide an alternative model for partitioning concurrent tasks in UNIX systems. They promote sharing among separate threads of control, but present unique synchronization problems. In this chapter, we looked at how we can fine-tune our threads and their synchronization primitives. We discussed reentrancy with threads. We also looked at how threads interact with some of the process-oriented system calls.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch12ans01][12.1]]* Run the program in [[file:part0024.xhtml#ch12fig17][Figure 12.17]] on a Linux system, but redirect the output into a file. Explain the results.
@@ -1502,7 +1502,7 @@ Although the =pthread_atfork= mechanism is intended to make locking state consis
 
 • If an application calls =fork= in a signal handler (which is legal, because =fork= is async-signal safe), then the fork handlers registered by =pthread_atfork= can call only async-signal safe functions, or else the results are undefined.
 
-*** 12.10. Threads and I/O
+** 12.10. Threads and I/O
 
 
 We introduced the =pread= and =pwrite= functions in [[file:part0015.xhtml#ch03lev1sec11][Section 3.11]]. These functions are helpful in a multithreaded environment, because all threads in a process share the same file descriptors.
@@ -1519,12 +1519,12 @@ To solve this problem, we can use =pread= to make the setting of the offset and 
 
 Using =pread=, we can ensure that thread A reads the record at offset 300, whereas thread B reads the record at offset 700. We can use =pwrite= to solve the problem of concurrent threads writing to the same file.
 
-*** 12.11. Summary
+** 12.11. Summary
 
 
 Threads provide an alternative model for partitioning concurrent tasks in UNIX systems. They promote sharing among separate threads of control, but present unique synchronization problems. In this chapter, we looked at how we can fine-tune our threads and their synchronization primitives. We discussed reentrancy with threads. We also looked at how threads interact with some of the process-oriented system calls.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch12ans01][12.1]]* Run the program in [[file:part0024.xhtml#ch12fig17][Figure 12.17]] on a Linux system, but redirect the output into a file. Explain the results.

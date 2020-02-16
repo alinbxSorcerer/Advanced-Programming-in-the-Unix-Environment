@@ -1,7 +1,7 @@
-** 11. Threads
+* 11. Threads
 
 
-*** 11.1. Introduction
+** 11.1. Introduction
 
 
 We discussed processes in earlier chapters. We learned about the environment of a UNIX process, the relationships between processes, and ways to control processes. We saw that a limited amount of sharing can occur between related processes.
@@ -10,7 +10,7 @@ In this chapter, we'll look inside a process further to see how we can use multi
 
 Anytime you try to share a single resource among multiple users, you have to deal with consistency. We'll conclude this chapter with a look at the synchronization mechanisms available to prevent multiple threads from viewing inconsistencies in their shared resources.
 
-*** 11.2. Thread Concepts
+** 11.2. Thread Concepts
 
 
 A typical UNIX process can be thought of as having a single thread of control: each process is doing only one thing at a time. With multiple threads of control, we can design our programs to do more than one thing at a time within a single process, with each thread handling a separate task. This approach can have several benefits.
@@ -29,7 +29,7 @@ A thread consists of the information necessary to represent an execution context
 
 The threads interfaces we're about to see are from POSIX.1-2001. The threads interfaces, also known as “pthreads” for “POSIX threads,” originally were optional in POSIX.1-2001, but SUSv4 moved them to the base. The feature test macro for POSIX threads is =_POSIX_THREADS=. Applications can either use this in an =#ifdef= test to determine at compile time whether threads are supported or call =sysconf= with the =_SC_THREADS= constant to determine this at runtime. Systems conforming to SUSv4 define the symbol =_POSIX_THREADS= to have the value 200809L.
 
-*** 11.3. Thread Identification
+** 11.3. Thread Identification
 
 
 Just as every process has a process ID, every thread has a thread ID. Unlike the process ID, which is unique in the system, the thread ID has significance only within the context of the process to which it belongs.
@@ -71,7 +71,7 @@ This function can be used with =pthread_equal= when a thread needs to identify d
 [[../Images/image01399.jpeg]]
 *Figure 11.1* Work queue example
 
-*** 11.4. Thread Creation
+** 11.4. Thread Creation
 
 
 The traditional UNIX process model supports only one thread of control per process. Conceptually, this is the same as a threads-based model whereby each process is made up of only one thread. With pthreads, when a program runs, it also starts out as a single process with a single thread of control. As the program runs, its behavior should be indistinguishable from the traditional process, until it creates more threads of control. Additional threads can be created by calling the =pthread_create= function.
@@ -189,7 +189,7 @@ The Linux thread IDs look like pointers, even though they are represented as uns
 
 The threads implementation changed between Linux 2.4 and Linux 2.6. In Linux 2.4, LinuxThreads implemented each thread with a separate process. This made it difficult to match the behavior of POSIX threads. In Linux 2.6, the Linux kernel and threads library were overhauled to use a new threads implementation called the Native POSIX Thread Library (NPTL). This supported a model of multiple threads within a single process and made it easier to support POSIX threads semantics.
 
-*** 11.5. Thread Termination
+** 11.5. Thread Termination
 
 
 If any thread within a process calls =exit=, =_Exit=, or =_exit=, then the entire process terminates. Similarly, when the default action is to terminate the process, a signal sent to a thread will terminate the entire process (we'll talk more about the interactions between signals and threads in [[file:part0024.xhtml#ch12lev1sec8][Section 12.8]]).
@@ -602,7 +602,7 @@ Returns: 0 if OK, error number on failure
 
 As we will see in the next chapter, we can create a thread that is already in the detached state by modifying the thread attributes we pass to =pthread_create=.
 
-*** 11.6. Thread Synchronization
+** 11.6. Thread Synchronization
 
 
 When multiple threads of control share the same memory, we need to make sure that each thread sees a consistent view of its data. If each thread uses variables that other threads don't read or modify, no consistency problems will exist. Similarly, if a variable is read-only, there is no consistency problem with more than one thread reading its value at the same time. However, when one thread can modify a variable that other threads can read or modify, we need to synchronize the threads to ensure that they don't use an invalid value when accessing the variable's memory contents.
@@ -638,7 +638,7 @@ In a sequentially consistent environment, we can explain modifications to our da
 
 Besides the computer architecture, races can arise from the ways in which our programs use variables, creating places where it is possible to view inconsistencies. For example, we might increment a variable and then make a decision based on its value. The combination of the increment step and the decision-making step isn't atomic, which opens a window where inconsistencies can arise.
 
-**** 11.6.1. Mutexes
+*** 11.6.1. Mutexes
 
 
 We can protect our data and ensure access by only one thread at a time by using the pthreads mutual-exclusion interfaces. A /mutex/ is basically a lock that we set (lock) before accessing a shared resource and release (unlock) when we're done. While it is set, any other thread that tries to set it will block until we release it. If more than one thread is blocked when we unlock the mutex, then all threads blocked on the lock will be made runnable, and the first one to run will be able to set the lock. The others will see that the mutex is still locked and go back to waiting for it to become available again. In this way, only one thread will proceed at a time.
@@ -750,7 +750,7 @@ Before using the object, threads are expected to add a reference to it by callin
 
 In this example, we have ignored how threads find an object before calling =foo_hold=. Even though the reference count is zero, it would be a mistake for =foo_rele= to free the object's memory if another thread is blocked on the mutex in a call to =foo_hold=. We can avoid this problem by ensuring that the object can't be found before freeing its memory. We'll see how to do this in the examples that follow.
 
-**** 11.6.2. Deadlock Avoidance
+*** 11.6.2. Deadlock Avoidance
 
 
 A thread will deadlock itself if it tries to lock the same mutex twice, but there are less obvious ways to create deadlocks with mutexes. For example, when we use more than one mutex in our programs, a deadlock can occur if we allow one thread to hold a mutex and block while trying to lock a second mutex at the same time that another thread holding the second mutex tries to lock the first mutex. Neither thread can proceed, because each needs a resource that is held by the other, so we have a deadlock.
@@ -985,7 +985,7 @@ foo_rele(struct foo *fp) /* release a reference to the object */
 
 Note how much simpler the program in [[file:part0023.xhtml#ch11fig12][Figure 11.12]] is compared to the program in [[file:part0023.xhtml#ch11fig11][Figure 11.11]]. The lock-ordering issues surrounding the hash list and the reference count go away when we use the same lock for both purposes. Multithreaded software design involves these types of trade-offs. If your locking granularity is too coarse, you end up with too many threads blocking behind the same locks, with little improvement possible from concurrency. If your locking granularity is too fine, then you suffer bad performance from excess locking overhead, and you end up with complex code. As a programmer, you need to find the correct balance between code complexity and performance, while still satisfying your locking requirements.
 
-**** 11.6.3. pthread_mutex_timedlock Function
+*** 11.6.3. pthread_mutex_timedlock Function
 
 
 One additional mutex primitive allows us to bound the time that a thread blocks when a mutex it is trying to acquire is already locked. The =pthread_mutex_timedlock= function is equivalent to =pthread_mutex_lock=, but if the timeout value is reached, =pthread_mutex_timedlock= will return the error code =ETIMEDOUT= without locking the mutex.
@@ -1066,7 +1066,7 @@ Note that the time blocked can vary for several reasons: the start time could ha
 
 Mac OS X 10.6.8 doesn't support =pthread_mutex_timedlock= yet, but FreeBSD 8.0, Linux 3.2.0, and Solaris 10 do support it, although Solaris still bundles it in the real-time library, =librt=. Solaris 10 also provides an alternative function that uses a relative timeout.
 
-**** 11.6.4. Reader--Writer Locks
+*** 11.6.4. Reader--Writer Locks
 
 
 Reader--writer locks are similar to mutexes, except that they allow for higher degrees of parallelism. With a mutex, the state is either locked or unlocked, and only one thread can lock it at a time. Three states are possible with a reader--writer lock: locked in read mode, locked in write mode, and unlocked. Only one thread at a time can hold a reader--writer lock in write mode, but multiple threads can hold a reader--writer lock in read mode at the same time.
@@ -1263,7 +1263,7 @@ In this example, we lock the queue's reader--writer lock in write mode whenever 
 
 The worker threads take only those jobs that match their thread ID off the queue. Since the job structures are used only by one thread at a time, they don't need any extra locking.
 
-**** 11.6.5. Reader--Writer Locking with Timeouts
+*** 11.6.5. Reader--Writer Locking with Timeouts
 
 
 Just as with mutexes, the Single UNIX Specification provides functions to lock reader--writer locks with a timeout to give applications a way to avoid blocking indefinitely while trying to acquire a reader--writer lock. These functions are =pthread_rwlock_timedrdlock= and =pthread_rwlock_timedwrlock=.
@@ -1287,7 +1287,7 @@ Both return: 0 if OK, error number on failure
 
 These functions behave like their “untimed” counterparts. The /tsptr/ argument points to a =timespec= structure specifying the time at which the thread should stop blocking. If they can't acquire the lock, these functions return the =ETIMEDOUT= error when the timeout expires. Like the =pthread_mutex_timedlock= function, the timeout specifies an absolute time, not a relative one.
 
-**** 11.6.6. Condition Variables
+*** 11.6.6. Condition Variables
 
 
 Condition variables are another synchronization mechanism available to threads. These synchronization objects provide a place for threads to rendezvous. When used with mutexes, condition variables allow threads to wait in a race-free way for arbitrary conditions to occur.
@@ -1435,7 +1435,7 @@ enqueue_msg(struct msg *mp)
 
 The condition is the state of the work queue. We protect the condition with a mutex and evaluate the condition in a =while= loop. When we put a message on the work queue, we need to hold the mutex, but we don't need to hold the mutex when we signal the waiting threads. As long as it is okay for a thread to pull the message off the queue before we call =cond_signal=, we can do this after releasing the mutex. Since we check the condition in a =while= loop, this doesn't present a problem; a thread will wake up, find that the queue is still empty, and go back to waiting again. If the code couldn't tolerate this race, we would need to hold the mutex when we signal the threads.
 
-**** 11.6.7. Spin Locks
+*** 11.6.7. Spin Locks
 
 
 A spin lock is like a mutex, except that instead of blocking a process by sleeping, the process is blocked by busy-waiting (spinning) until the lock can be acquired. A spin lock could be used in situations where locks are held for short periods of times and threads don't want to incur the cost of being descheduled.
@@ -1488,7 +1488,7 @@ Note that if a spin lock is currently unlocked, then the =pthread_spin_lock= fun
 
 If either =pthread_spin_lock= or =pthread_spin_trylock= returns 0, then the spin lock is locked. We need to be careful not to call any functions that might sleep while holding the spin lock. If we do, then we'll waste CPU resources by extending the time other threads will spin if they try to acquire it.
 
-**** 11.6.8. Barriers
+*** 11.6.8. Barriers
 
 
 Barriers are a synchronization mechanism that can be used to coordinate multiple threads working in parallel. A barrier allows each thread to wait until all cooperating threads have reached the same point, and then continue executing from there. We've already seen one form of barrier---the =pthread_join= function acts as a barrier to allow one thread to wait until another thread exits.
@@ -1677,12 +1677,12 @@ We don't need to use the =PTHREAD_BARRIER_SERIAL_THREAD= return value from =pthr
 
 If we write a program to sort 8 million numbers with heapsort using 1 thread only, we will see a performance improvement when comparing it to the program in [[file:part0023.xhtml#ch11fig16][Figure 11.16]]. On a system with 8 cores, the single-threaded program sorted 8 million numbers in 12.14 seconds. On the same system, using 8 threads in parallel and 1 thread to merge the results, the same set of 8 million numbers was sorted in 1.91 seconds, 6 times faster.
 
-*** 11.7. Summary
+** 11.7. Summary
 
 
 In this chapter, we introduced the concept of threads and discussed the POSIX.1 primitives available to create and destroy them. We also introduced the problem of thread synchronization. We discussed five fundamental synchronization mechanisms---mutexes, reader--writer locks, condition variables, spin locks, and barriers---and we saw how to use them to protect shared resources.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch11ans01][11.1]]* Modify the example code shown in [[file:part0023.xhtml#ch11fig04][Figure 11.4]] to pass the structure between the threads properly.
@@ -1845,12 +1845,12 @@ We don't need to use the =PTHREAD_BARRIER_SERIAL_THREAD= return value from =pthr
 
 If we write a program to sort 8 million numbers with heapsort using 1 thread only, we will see a performance improvement when comparing it to the program in [[file:part0023.xhtml#ch11fig16][Figure 11.16]]. On a system with 8 cores, the single-threaded program sorted 8 million numbers in 12.14 seconds. On the same system, using 8 threads in parallel and 1 thread to merge the results, the same set of 8 million numbers was sorted in 1.91 seconds, 6 times faster.
 
-*** 11.7. Summary
+** 11.7. Summary
 
 
 In this chapter, we introduced the concept of threads and discussed the POSIX.1 primitives available to create and destroy them. We also introduced the problem of thread synchronization. We discussed five fundamental synchronization mechanisms---mutexes, reader--writer locks, condition variables, spin locks, and barriers---and we saw how to use them to protect shared resources.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch11ans01][11.1]]* Modify the example code shown in [[file:part0023.xhtml#ch11fig04][Figure 11.4]] to pass the structure between the threads properly.

@@ -1,14 +1,14 @@
-** 19. Pseudo Terminals
+* 19. Pseudo Terminals
 
 
-*** 19.1. Introduction
+** 19.1. Introduction
 
 
 In [[file:part0021.xhtml#ch09][Chapter 9]], we saw that terminal logins come in through a terminal device, automatically providing terminal semantics. A terminal line discipline ([[file:part0030.xhtml#ch18fig02][Figure 18.2]]) exists between the terminal and the programs that we run, so we can set the terminal's special characters (e.g., backspace, line erase, interrupt) and the like. When a login arrives on a network connection, however, a terminal line discipline is not automatically provided between the incoming network connection and the login shell. [[file:part0021.xhtml#ch09fig05][Figure 9.5]] showed that a /pseudo terminal/ device driver is used to provide terminal semantics.
 
 In addition to network logins, pseudo terminals have other uses that we explore in this chapter. We start with an overview on how to use pseudo terminals, followed by a discussion of specific use cases. Next we provide functions to create pseudo terminals on various platforms, and then we use these functions to write a program that we call =pty=. We'll show various uses of this program: making a transcript of all the character input and output on the terminal (the =script=(1) program) and running coprocesses to avoid the buffering problems we encountered in the program from [[file:part0027.xhtml#ch15fig19][Figure 15.19]].
 
-*** 19.2. Overview
+** 19.2. Overview
 
 
 The term /pseudo terminal/ implies that it looks like a terminal to an application program, but it's not a real terminal. [[file:part0031.xhtml#ch19fig01][Figure 19.1]] shows the typical arrangement of the processes involved when a pseudo terminal is being used. The key points in this figure are the following.
@@ -33,7 +33,7 @@ From this point on, we'll simplify the figures by not showing the “read and wr
 
 We'll now examine some of the typical uses of pseudo terminals.
 
-**** Network Login Servers
+*** Network Login Servers
 
 
 Pseudo terminals are built into servers that provide network logins. The typical examples are the =telnetd= and =rlogind= servers. Chapter 15 of Stevens [[[file:part0038.xhtml#bib01_62][1990]]] details the steps involved in the =rlogin= service. Once the login shell is running on the remote host, we have the arrangement shown in [[file:part0031.xhtml#ch19fig03][Figure 19.3]]. A similar arrangement is used by the =telnetd= server.
@@ -45,7 +45,7 @@ We show two calls to =exec= between the =rlogind= server and the login shell, be
 
 A key point in [[file:part0031.xhtml#ch19fig03][Figure 19.3]] is that the process driving the PTY master is normally reading and writing another I/O stream at the same time. In this example, the other I/O stream is the TCP/IP box. This implies that the process must be using some form of I/O multiplexing ([[file:part0026.xhtml#ch14lev1sec4][Section 14.4]]), such as =select= or =poll=, or must be divided into two processes or threads.
 
-**** Windowing System Terminal Emulation
+*** Windowing System Terminal Emulation
 
 
 Windowing systems typically provide a terminal emulator so that we can use a shell to run our programs from a familiar command-line environment. The terminal emulator acts as an intermediary between a shell and the window manager. Each shell executes in its own window. This arrangement (with two shells running in different windows) is shown in [[file:part0031.xhtml#ch19fig04][Figure 19.4]].
@@ -57,7 +57,7 @@ The shell runs with its standard input, standard output, and standard error atta
 
 When a user resizes a terminal emulator window, the window manager informs the terminal emulator. The terminal emulator issues a =TIOCSWINSZ ioctl= command on the master side of the PTY to set the window size for the slave side. If the new size differs from the current size, the kernel sends a =SIGWINCH= signal to the foreground process group of the PTY slave. If the application needs to redraw the screen when the window is resized, it can catch the =SIGWINCH= signal, issue the =TIOCGWINSZ ioctl= command to get the new screen dimensions, and redraw the screen.
 
-**** script Program
+*** script Program
 
 
 The =script=(1) program that is supplied with most UNIX systems makes a copy in a file of everything that is input and output during a terminal session. The program does this by placing itself between the terminal and a new invocation of our login shell. [[file:part0031.xhtml#ch19fig05][Figure 19.5]] details the interactions involved in the =script= program. Here, we specifically show that the =script= program is normally run from a login shell, which then waits for =script= to terminate.
@@ -71,14 +71,14 @@ While writing the first edition of this book, Rich Stevens used the =script= pro
 
 After developing the general =pty= program in [[file:part0031.xhtml#ch19lev1sec5][Section 19.5]], we'll see that a trivial shell script turns it into a version of the =script= program.
 
-**** expect Program
+*** expect Program
 
 
 Pseudo terminals can be used to drive interactive programs in noninteractive modes. Numerous programs are hard-wired to require a terminal to run. One example is the =passwd=(1) command, which requires that the user enter a password in response to a prompt.
 
 Rather than modify all the interactive programs to support a batch mode of operation, a better solution is to provide a way to drive any interactive program from a script. The =expect= program [Libes [[file:part0038.xhtml#bib01_41][1990]], [[file:part0038.xhtml#bib01_42][1991]], [[file:part0038.xhtml#bib01_43][1994]]] provides a way to do this. It uses pseudo terminals to run other programs, similar to the =pty= program in [[file:part0031.xhtml#ch19lev1sec5][Section 19.5]]. But =expect= also provides a programming language to examine the output of the program being run to make decisions about what to send the program as input. When an interactive program is being run from a script, we can't just copy everything from the script to the program, and vice versa. Instead, we have to send the program some input, look at its output, and decide what to send it next.
 
-**** Running Coprocesses
+*** Running Coprocesses
 
 
 In the coprocess example in [[file:part0027.xhtml#ch15fig19][Figure 15.19]], we couldn't invoke a coprocess that used the standard I/O library for its input and output, because when we talked to the coprocess across a pipe, the standard I/O library fully buffered the standard input and standard output, leading to a deadlock. If the coprocess is a compiled program for which we don't have the source code, we can't add =fflush= statements to solve this problem. [[file:part0027.xhtml#ch15fig16][Figure 15.16]] showed a process driving a coprocess. What we need to do is place a pseudo terminal between the two processes, as shown in [[file:part0031.xhtml#ch19fig06][Figure 19.6]], to trick the coprocess into thinking that it is being driven from a terminal instead of from another process.
@@ -90,7 +90,7 @@ Now the standard input and standard output of the coprocess look like a terminal
 
 The parent can obtain a pseudo terminal between itself and the coprocess in two ways. (The parent in this case could be the program in [[file:part0027.xhtml#ch15fig18][Figure 15.18]], which used two pipes to communicate with the coprocess.) One way is for the parent to call the =pty_fork= function directly ([[file:part0031.xhtml#ch19lev1sec4][Section 19.4]]) instead of calling =fork=. Another is to =exec= the =pty= program ([[file:part0031.xhtml#ch19lev1sec5][Section 19.5]]) with the coprocess as its argument. We'll look at these two solutions after showing the =pty= program.
 
-**** Watching the Output of Long-Running Programs
+*** Watching the Output of Long-Running Programs
 
 
 If we have a program that runs for a long time, we can easily run it in the background using any of the standard shells. Unfortunately, if we redirect its standard output to a file, and if it doesn't generate much output, we can't easily monitor its progress, because the standard I/O library will fully buffer its standard output. All that we'll see are blocks of output written by the standard I/O library to the output file, possibly in chunks as large as 8,192 bytes.
@@ -100,7 +100,7 @@ If we have the source code, we can insert calls to =fflush= to force the standar
 [[../Images/image01494.jpeg]]
 *Figure 19.7* Running a slow output program using a pseudo terminal
 
-*** 19.3. Opening Pseudo-Terminal Devices
+** 19.3. Opening Pseudo-Terminal Devices
 
 
 PTYs act like physical terminal devices so that applications are unaware of which type of device they are using. However, applications don't need to set the =O_TTY_INIT= flag when opening PTY device files. The Single UNIX Specification already requires that implementations initialize the slave side of a PTY device when it is first opened so that any nonstandard =termios= flags needed for the device to operate as expected are set. This requirement is intended to allow the PTY device to operate properly with POSIX-conforming applications that call =tcgetattr= and =tcsetattr=.
@@ -271,7 +271,7 @@ The reason why we might /not/ need to push these three modules is that they migh
 
 Linux, Mac OS X, and Solaris follow the historical System V behavior: if the caller is a session leader that does not already have a controlling terminal, the call to =open= allocates the PTY slave as the controlling terminal. If we didn't want this to happen, we could specify the =O_NOCTTY= flag for =open=. However, on FreeBSD, the =open= of the slave PTY does not have the side effect of allocating the device as the controlling terminal. In the next section, we'll see how to allocate the controlling terminal when running on FreeBSD.
 
-*** 19.4. pty_fork Function
+** 19.4. pty_fork Function
 
 
 We now use the two functions from the previous section, =ptym_open= and =ptys_open=, to write a new function that we call =pty_fork=. This new function combines the opening of the master and the slave with a call to =fork=, establishing the child as a session leader with a controlling terminal.
@@ -388,7 +388,7 @@ The two structures =termios= and =winsize= are then initialized in the child. Fi
 
 After the call to =fork=, the parent just returns the PTY master descriptor and the process ID of the child. In the next section, we use the =pty_fork= function in the =pty= program.
 
-*** 19.5. pty Program
+** 19.5. pty Program
 
 
 The goal in writing the =pty= program is to be able to type
@@ -622,7 +622,7 @@ sig_term(int signo)
 
 Note that because we use two processes, one has to notify the other when it terminates. We use the =SIGTERM= signal for this notification.
 
-*** 19.6. Using the pty Program
+** 19.6. Using the pty Program
 
 
 We'll now look at various examples with the =pty= program, seeing the need for the command-line options.
@@ -649,14 +649,14 @@ fd 0: /dev/ttys005               ttys005 is the next available PT
 fd 1: /dev/ttys005
 fd 2: /dev/ttys005
 
-**** utmp File
+*** utmp File
 
 
 In [[file:part0018.xhtml#ch06lev1sec8][Section 6.8]], we described the =utmp= file that records all users currently logged in to a UNIX system. The question is whether a user running a program on a pseudo terminal is considered logged in. In the case of remote logins, with =telnetd= and =rlogind=, obviously an entry should be made in the =utmp= file for the user logged in on the pseudo terminal. There is little agreement, however, whether users running a shell on a pseudo terminal from a window system or from a program, such as =script=, should have entries made in the =utmp= file. Some systems record these; others don't. If a system doesn't record these entries in the =utmp= file, the =who=(1) program normally won't show the corresponding pseudo terminals as being used.
 
 Unless the =utmp= file has other-write permission enabled (which is considered to be a security hole), random programs that use pseudo terminals won't be able to write to this file.
 
-**** Job Control Interaction
+*** Job Control Interaction
 
 
 If we run a job-control shell under =pty=, it works normally. For example,
@@ -680,7 +680,7 @@ When we use =pty= to run a job-control shell, the jobs invoked by this new shell
 
 The only way to avoid this inability of the process invoked by =pty= to handle job-control signals is to add yet another command-line flag to =pty=, telling it to recognize the job control suspend character itself (in the =pty= child) instead of letting the character get all the way through to the other line discipline.
 
-**** Watching the Output of Long-Running Programs
+*** Watching the Output of Long-Running Programs
 
 
 Another example of job control interaction with the =pty= program is found in the configuration illustrated in [[file:part0031.xhtml#ch19fig07][Figure 19.7]]. If we run the program that generates output slowly as
@@ -697,7 +697,7 @@ pty -i slowout < /dev/null > file.out &
 
 This flag causes the =pty= child in [[file:part0031.xhtml#ch19fig12][Figure 19.12]] to exit when the end of file is encountered, but the child doesn't tell the parent to terminate. Instead, the parent continues copying the PTY slave output to standard output (the file =file.out= in the example).
 
-**** script Program
+*** script Program
 
 
 Using the =pty= program, we can implement the =script=(1) program as the following shell script:
@@ -714,7 +714,7 @@ Once we run this shell script, we can execute the =ps= command to see all the pr
 
 In this example, we assume that the =SHELL= variable is the Korn shell (probably =/bin/ksh=). As we mentioned earlier, =script= copies only what is output by the new shell (and any processes that it invokes), but since the line discipline module above the PTY slave normally has echo enabled, most of what we type is also written to the =typescript= file.
 
-**** Running Coprocesses
+*** Running Coprocesses
 
 
 In [[file:part0027.xhtml#ch15fig18][Figure 15.18]], the coprocess couldn't use the standard I/O functions, because standard input and standard output do not refer to a terminal, so the standard I/O functions treat them as fully buffered. If we run the coprocess under =pty= by replacing the line
@@ -738,7 +738,7 @@ We also have the =-e= option turn off the =ONLCR= flag in the =termios= structur
 
 Testing this example on different systems revealed another problem that we alluded to in [[file:part0026.xhtml#ch14lev1sec7][Section 14.7]] when we described the =readn= and =writen= functions. The amount of data returned by a =read=, when the descriptor refers to something other than an ordinary disk file, can differ between implementations. This coprocess example using =pty= gave unexpected results that were tracked down to the =read= function on the pipe in the program from [[file:part0027.xhtml#ch15fig18][Figure 15.18]], which returned less than a line. The solution was to not use the program shown in [[file:part0027.xhtml#ch15fig18][Figure 15.18]], but rather to use the version of this program from Exercise 15.5 that was modified to use the standard I/O library, with the standard I/O streams for both pipes set to line buffering. With this approach, the =fgets= function does as many =read=s as required to obtain a complete line. The =while= loop in [[file:part0027.xhtml#ch15fig18][Figure 15.18]] assumes that each line sent to the coprocess causes one line to be returned.
 
-**** Driving Interactive Programs Noninteractively
+*** Driving Interactive Programs Noninteractively
 
 
 Although it's tempting to think that =pty= can run any coprocess, even a coprocess that is interactive, it doesn't work. The problem is that =pty= just copies everything on its standard input to the PTY and everything from the PTY to its standard output, never looking at what it sends or what it gets back.
@@ -828,12 +828,12 @@ do_driver(char *driver)
 
 By writing our own driver program that is invoked by =pty=, we can drive interactive programs in any way desired. Even though it has its standard input and standard output connected to =pty=, the driver process can still interact with the user by reading and writing =/dev/tty=. This solution still isn't as general as the =expect= program, but it provides a useful option to =pty= for fewer than 50 lines of code.
 
-*** 19.7. Advanced Features
+** 19.7. Advanced Features
 
 
 Pseudo terminals have some additional capabilities that we briefly mention here. These capabilities are further documented in Sun Microsystems [[[file:part0038.xhtml#bib01_67][2005]]] and the BSD =pts=(4) manual page.
 
-**** Packet Mode
+*** Packet Mode
 
 
 Packet mode lets the PTY master learn of state changes in the PTY slave. On Solaris, this mode is enabled by pushing the STREAMS module =pckt= onto the PTY master side. We showed this optional module in [[file:part0031.xhtml#ch19fig02][Figure 19.2]]. On FreeBSD, Linux, and Mac OS X, this mode is enabled with the =TIOCPKT ioctl= command.
@@ -842,31 +842,31 @@ The details of packet mode differ between Solaris and the other platforms. Under
 
 Regardless of the implementation details, the purpose of packet mode is to inform the process reading the PTY master when the following events occur at the line discipline module above the PTY slave: when the read queue is flushed, when the write queue is flushed, when output is stopped (e.g., Control-S), when output is restarted, when XON/XOFF flow control is enabled after being disabled, and when XON/XOFF flow control is disabled after being enabled. These events are used, for example, by the =rlogin= client and the =rlogind= server.
 
-**** Remote Mode
+*** Remote Mode
 
 
 A PTY master can set the PTY slave to remote mode by issuing the =TIOCREMOTE ioctl= command. Although Mac OS X 10.6.8 and Solaris 10 use the same command to enable and disable this feature, under Solaris the third argument to =ioctl= is an integer, whereas with Mac OS X, it is a pointer to an integer. (FreeBSD 8.0 and Linux 3.2.0 don't support this command.)
 
 When it sets this mode, the PTY master is telling the PTY slave's line discipline not to perform any processing of the data that it receives from the PTY master, regardless of the canonical/noncanonical flag in the slave's =termios= structure. Remote mode is intended for an application, such as a window manager, that does its own line editing.
 
-**** Window Size Changes
+*** Window Size Changes
 
 
 The process above the PTY master can issue the =TIOCSWINSZ ioctl= command to set the window size of the slave. If the new size differs from the current size, a =SIGWINCH= signal is sent to the foreground process group of the PTY slave.
 
-**** Signal Generation
+*** Signal Generation
 
 
 The process reading and writing the PTY master can send signals to the process group of the PTY slave. Under Solaris 10, this is done using the =TIOCSIGNAL ioctl= command. With FreeBSD 8.0, Linux 3.2.0, and Mac OS X 10.6.8, the =ioctl= command is =TIOCSIG=. In both cases, the third argument is set to the signal number.
 
-*** 19.8. Summary
+** 19.8. Summary
 
 
 We started this chapter with an overview of how to use pseudo terminals and a look at some use cases. We continued by examining the code required to set up a pseudo terminal under the four platforms discussed in this text. We then used this code to provide the generic =pty_fork= function that can be used by many different applications. We used this function as the basis for a small program (=pty=), which we then used to explore many of the properties of pseudo terminals.
 
 Pseudo terminals are used daily on most UNIX systems to provide network logins. We've examined other uses for pseudo terminals as well, ranging from the =script= program to driving interactive programs from a batch script.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch19ans01][19.1]]* When we remotely log in to a BSD system using either =telnet= or =rlogin=, the ownership of the PTY slave and its permissions are set, as we described in [[file:part0031.xhtml#ch19lev1sec3][Section 19.3]]. How does this happen?
@@ -906,7 +906,7 @@ fd 2: /dev/ttys005
 
 Pseudo terminals are used daily on most UNIX systems to provide network logins. We've examined other uses for pseudo terminals as well, ranging from the =script= program to driving interactive programs from a batch script.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch19ans01][19.1]]* When we remotely log in to a BSD system using either =telnet= or =rlogin=, the ownership of the PTY slave and its permissions are set, as we described in [[file:part0031.xhtml#ch19lev1sec3][Section 19.3]]. How does this happen?

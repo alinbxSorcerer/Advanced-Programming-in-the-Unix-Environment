@@ -1,10 +1,9 @@
-** 4. Files and Directories
-
-*** 4.1. Introduction
+* 4. Files and Directories
+** 4.1. Introduction
 
 In the previous chapter we covered the basic functions that perform I/O. The discussion centered on I/O for regular files---opening a file, and reading or writing a file. We'll now look at additional features of the file system and the properties of a file. We'll start with the =stat= functions and go through each member of the =stat= structure, looking at all the attributes of a file. In this process, we'll also describe each of the functions that modify these attributes: change the owner, change the permissions, and so on. We'll also look in more detail at the structure of a UNIX file system and symbolic links. We finish this chapter with the functions that operate on directories, and we develop a function that descends through a directory hierarchy.
 
-*** 4.2. stat, fstat, fstatat, and lstat Functions
+** 4.2. stat, fstat, fstatat, and lstat Functions
 
 The discussion in this chapter centers on the four =stat= functions and the information they return.
 
@@ -62,7 +61,7 @@ Note that most members of the =stat= structure are specified by a primitive syst
 
 The biggest user of the =stat= functions is probably the =ls -l= command, to learn all the information about a file.
 
-*** 4.3. File Types
+** 4.3. File Types
 
 
 We've talked about two different types of files so far: regular files and directories. Most files on a UNIX system are either regular files or directories, but there are additional types of files. The types are
@@ -87,12 +86,12 @@ Note that FreeBSD no longer supports block special files. All access to devices 
 
 The type of a file is encoded in the =st_mode= member of the =stat= structure. We can determine the file type with the macros shown in [[file:part0016.xhtml#ch04fig01][Figure 4.1]]. The argument to each of these macros is the =st_mode= member from the =stat= structure.
 
-[[../Images/image01321.jpeg]]
+[[./Images/image01321.jpeg]]
 *Figure 4.1* File type macros in =<sys/stat.h>=
 
 POSIX.1 allows implementations to represent interprocess communication (IPC) objects, such as message queues and semaphores, as files. The macros shown in [[file:part0016.xhtml#ch04fig02][Figure 4.2]] allow us to determine the type of IPC object from the =stat= structure. Instead of taking the =st_mode= member as an argument, these macros differ from those in [[file:part0016.xhtml#ch04fig01][Figure 4.1]] in that their argument is a pointer to the =stat= structure.
 
-[[../Images/image01322.jpeg]]
+[[./Images/image01322.jpeg]]
 *Figure 4.2* IPC type macros in =<sys/stat.h>=
 
 Message queues, semaphores, and shared memory objects are discussed in [[file:part0027.xhtml#ch15][Chapter 15]]. However, none of the various implementations of the UNIX System discussed in this book represent these objects as files.
@@ -167,15 +166,15 @@ Historically, early versions of the UNIX System didn't provide the =S_ISxxx= mac
 
 We've said that regular files are predominant, but it is interesting to see what percentage of the files on a given system are of each file type. [[file:part0016.xhtml#ch04fig04][Figure 4.4]] shows the counts and percentages for a Linux system that is used as a single-user workstation. This data was obtained from the program shown in [[file:part0016.xhtml#ch04lev1sec22][Section 4.22]].
 
-[[../Images/image01323.jpeg]]
+[[./Images/image01323.jpeg]]
 *Figure 4.4* Counts and percentages of different file types
 
-*** 4.4. Set-User-ID and Set-Group-ID
+** 4.4. Set-User-ID and Set-Group-ID
 
 
 Every process has six or more IDs associated with it. These are shown in [[file:part0016.xhtml#ch04fig05][Figure 4.5]].
 
-[[../Images/image01324.jpeg]]
+[[./Images/image01324.jpeg]]
 *Figure 4.5* User IDs and group IDs associated with each process
 
 • The real user ID and real group ID identify who we really are. These two fields are taken from our entry in the password file when we log in. Normally, these values don't change during a login session, although there are ways for a superuser process to change them, which we describe in [[file:part0020.xhtml#ch08lev1sec11][Section 8.11]].
@@ -196,14 +195,14 @@ For example, if the owner of the file is the superuser and if the file's set-use
 
 Returning to the =stat= function, the set-user-ID bit and the set-group-ID bit are contained in the file's =st_mode= value. These two bits can be tested against the constants =S_ISUID= and =S_ISGID=, respectively.
 
-*** 4.5. File Access Permissions
+** 4.5. File Access Permissions
 
 
 The =st_mode= value also encodes the access permission bits for the file. When we say /file/, we mean any of the file types that we described earlier. All the file types---directories, character special files, and so on---have permissions. Many people think of only regular files as having access permissions.
 
 There are nine permission bits for each file, divided into three categories. They are shown in [[file:part0016.xhtml#ch04fig06][Figure 4.6]].
 
-[[../Images/image01325.jpeg]]
+[[./Images/image01325.jpeg]]
 *Figure 4.6* The nine file access permission bits, from =<sys/stat.h>=
 
 The term /user/ in the first three rows in [[file:part0016.xhtml#ch04fig06][Figure 4.6]] refers to the owner of the file. The =chmod=(1) command, which is typically used to modify these nine permission bits, allows us to specify =u= for user (owner), =g= for group, and =o= for other. Some books refer to these three as owner, group, and world; this is confusing, as the =chmod= command uses =o= to mean other, not owner. We'll use the terms /user/, /group/, and /other/, to be consistent with the =chmod= command.
@@ -244,7 +243,7 @@ The file access tests that the kernel performs each time a process opens, create
 
 These four steps are tried in sequence. Note that if the process owns the file (step 2), access is granted or denied based only on the user access permissions; the group permissions are never looked at. Similarly, if the process does not own the file but belongs to an appropriate group, access is granted or denied based only on the group access permissions; the other permissions are not looked at.
 
-*** 4.6. Ownership of New Files and Directories
+** 4.6. Ownership of New Files and Directories
 
 
 When we described the creation of a new file in [[file:part0015.xhtml#ch03][Chapter 3]] using either =open= or =creat=, we never said which values were assigned to the user ID and group ID of the new file. We'll see how to create a new directory in [[file:part0016.xhtml#ch04lev1sec21][Section 4.21]] when we describe the =mkdir= function. The rules for the ownership of a new directory are identical to the rules in this section for the ownership of a new file.
@@ -261,7 +260,7 @@ Using the second option---inheriting the directory's group ID---assures us that 
 
 As we mentioned earlier, this option for group ownership is the default for FreeBSD 8.0 and Mac OS X 10.6.8, but an option for Linux and Solaris. Under Solaris 10, and by default under Linux 3.2.0, we have to enable the set-group-ID bit, and the =mkdir= function has to propagate a directory's set-group-ID bit automatically for this to work. (This is described in [[file:part0016.xhtml#ch04lev1sec21][Section 4.21]].)
 
-*** 4.7. access and faccessat Functions
+** 4.7. access and faccessat Functions
 
 
 As we described earlier, when we open a file, the kernel performs its access tests based on the effective user and group IDs. Sometimes, however, a process wants to test accessibility based on the real user and group IDs. This is useful when a process is running as someone else, using either the set-user-ID or the set-group-ID feature. Even though a process might be set-user-ID to root, it might still want to verify that the real user can access a given file. The =access= and =faccessat= functions base their tests on the real user and group IDs. (Replace /effective/ with /real/ in the four steps at the end of [[file:part0016.xhtml#ch04lev1sec5][Section 4.5]].)
@@ -282,7 +281,7 @@ Both return: 0 if OK, --1 on error
 
 The /mode/ is either the value =F_OK= to test if a file exists, or the bitwise OR of any of the flags shown in [[file:part0016.xhtml#ch04fig07][Figure 4.7]].
 
-[[../Images/image01326.jpeg]]
+[[./Images/image01326.jpeg]]
 *Figure 4.7* The /mode/ flags for =access= function, from =<unistd.h>=
 
 The =faccessat= function behaves like =access= when the /pathname/ argument is absolute or when the /fd/ argument has the value =AT_FDCWD= and the /pathname/ argument is relative. Otherwise, =faccessat= evaluates the /pathname/ relative to the open directory referenced by the /fd/ argument.
@@ -349,7 +348,7 @@ In this example, the set-user-ID program can determine that the real user cannot
 
 In the preceding example and in [[file:part0020.xhtml#ch08][Chapter 8]], we'll sometimes switch to become the superuser to demonstrate how something works. If you're on a multiuser system and do not have superuser permission, you won't be able to duplicate these examples completely.
 
-*** 4.8. umask Function
+** 4.8. umask Function
 
 
 Now that we've described the nine permission bits associated with every file, we can describe the file mode creation mask that is associated with every process.
@@ -418,7 +417,7 @@ In the preceding example, we use the shell's =umask= command to print the file m
 
 Users can set the =umask= value to control the default permissions on the files they create. This value is expressed in octal, with one bit representing one permission to be masked off, as shown in [[file:part0016.xhtml#ch04fig10][Figure 4.10]]. Permissions can be denied by setting the corresponding bits. Some common =umask= values are 002 to prevent others from writing your files, 022 to prevent group members and others from writing your files, and 027 to prevent group members from writing your files and others from reading, writing, or executing your files.
 
-[[../Images/image01327.jpeg]]
+[[./Images/image01327.jpeg]]
 *Figure 4.10* The =umask= file access permission bits
 
 The Single UNIX Specification requires that the =umask= command support a symbolic mode of operation. Unlike the octal format, the symbolic format specifies which permissions are to be allowed (i.e., clear in the file creation mask) instead of which ones are to be denied (i.e., set in the file creation mask). Compare both forms of the command, shown below.
@@ -433,7 +432,7 @@ $ umask 027             change the file mode creation mask
 $ umask -S              print the symbolic form
 u=rwx,g=rx,o=
 
-*** 4.9. chmod, fchmod, and fchmodat Functions
+** 4.9. chmod, fchmod, and fchmodat Functions
 
 
 The =chmod=, =fchmod=, and =fchmodat= functions allow us to change the file access permissions for an existing file.
@@ -460,7 +459,7 @@ To change the permission bits of a file, the effective user ID of the process mu
 
 The /mode/ is specified as the bitwise OR of the constants shown in [[file:part0016.xhtml#ch04fig11][Figure 4.11]].
 
-[[../Images/image01328.jpeg]]
+[[./Images/image01328.jpeg]]
 *Figure 4.11* The /mode/ constants for =chmod= functions, from =<sys/stat.h>=
 
 Note that nine of the entries in [[file:part0016.xhtml#ch04fig11][Figure 4.11]] are the nine file access permission bits from [[file:part0016.xhtml#ch04fig06][Figure 4.6]]. We've added the two set-ID constants (=S_ISUID= and =S_ISGID=), the saved-text constant (=S_ISVTX=), and the three combined constants (=S_IRWXU=, =S_IRWXG=, and =S_IRWXO=).
@@ -530,7 +529,7 @@ FreeBSD 8.0 fails an attempt to set the set-group-ID in this case. The other sys
 
 FreeBSD 8.0, Linux 3.2.0, Mac OS X 10.6.8, and Solaris 10 add another security feature to try to prevent misuse of some of the protection bits. If a process that does not have superuser privileges writes to a file, the set-user-ID and set-group-ID bits are automatically turned off. If malicious users find a set-group-ID or a set-user-ID file they can write to, even though they can modify the file, they lose the special privileges of the file.
 
-*** 4.10. Sticky Bit
+** 4.10. Sticky Bit
 
 
 The =S_ISVTX= bit has an interesting history. On versions of the UNIX System that predated demand paging, this bit was known as the /sticky bit/. If it was set for an executable program file, then the first time the program was executed, a copy of the program's text was saved in the swap area when the process terminated. (The text portion of a program is the machine instructions.) The program would then load into memory more quickly the next time it was executed, because the swap area was handled as a contiguous file, as compared to the possibly random location of data blocks in a normal UNIX file system. The sticky bit was often set for common application programs, such as the text editor and the passes of the C compiler. Naturally, there was a limit to the number of sticky files that could be contained in the swap area before running out of swap space, but it was a useful technique. The name /sticky/ came about because the text portion of the file stuck around in the swap area until the system was rebooted. Later versions of the UNIX System referred to this as the /saved-text/ bit; hence the constant =S_ISVTX=. With today's newer UNIX systems, most of which have a virtual memory system and a faster file system, the need for this technique has disappeared.
@@ -549,7 +548,7 @@ The saved-text bit is not part of POSIX.1. It is part of the XSI option defined 
 
 Solaris 10 places special meaning on the sticky bit if it is set on a regular file. In this case, if none of the execute bits is set, the operating system will not cache the contents of the file.
 
-*** 4.11. chown, fchown, fchownat, and lchown Functions
+** 4.11. chown, fchown, fchownat, and lchown Functions
 
 
 The =chown= functions allow us to change a file's user ID and group ID, but if either of the arguments /owner/ or /group/ is --1, the corresponding ID is left unchanged.
@@ -597,7 +596,7 @@ This means that when =_POSIX_CHOWN_RESTRICTED= is in effect, you can't change th
 
 If these functions are called by a process other than a superuser process, on successful return, both the set-user-ID and the set-group-ID bits are cleared.
 
-*** 4.12. File Size
+** 4.12. File Size
 
 
 The =st_size= member of the =stat= structure contains the size of the file in bytes. This field is meaningful only for regular files, directories, and symbolic links.
@@ -616,7 +615,7 @@ Most contemporary UNIX systems provide the fields =st_blksize= and =st_blocks=. 
 
 Be aware that different versions of the UNIX System use units other than 512-byte blocks for =st_blocks=. Use of this value is nonportable.
 
-**** Holes in a File
+*** Holes in a File
 
 
 In [[file:part0015.xhtml#ch03lev1sec6][Section 3.6]], we mentioned that a regular file can contain “holes.” We showed an example of this in [[file:part0015.xhtml#ch03fig02][Figure 3.2]]. Holes are created by seeking past the current end of file and writing some data. As an example, consider the following:
@@ -655,7 +654,7 @@ Here, the actual number of bytes used by the new file is 8,495,104 (512 × 16,59
 
 Interested readers should refer to Section 4.2 of Bach [[[file:part0038.xhtml#bib01_14][1986]]], Sections 7.2 and 7.3 of McKusick et al. [[[file:part0038.xhtml#bib01_47][1996]]] (or Sections 8.2 and 8.3 in McKusick and Neville-Neil [[[file:part0038.xhtml#bib01_48][2005]]]), Section 15.2 of McDougall and Mauro [[[file:part0038.xhtml#bib01_49][2007]]], and Chapter 12 in Singh [[[file:part0038.xhtml#bib01_61][2006]]] for additional details on the physical layout of files.
 
-*** 4.13. File Truncation
+** 4.13. File Truncation
 
 
 Sometimes we would like to truncate a file by chopping off data at the end of the file. Emptying a file, which we can do with the =O_TRUNC= flag to =open=, is a special case of truncation.
@@ -682,7 +681,7 @@ Solaris also includes an extension to =fcntl= (=F_FREESP=) that allows us to fre
 
 We use =ftruncate= in the program shown in [[file:part0025.xhtml#ch13fig06][Figure 13.6]] when we need to empty a file after obtaining a lock on the file.
 
-*** 4.14. File Systems
+** 4.14. File Systems
 
 
 To appreciate the concept of links to a file, we need a conceptual understanding of the structure of the UNIX file system. Understanding the difference between an i-node and a directory entry that points to an i-node is also useful.
@@ -693,12 +692,12 @@ Each file system type has its own characteristic features --- and some of these 
 
 We can think of a disk drive being divided into one or more partitions. Each partition can contain a file system, as shown in [[file:part0016.xhtml#ch04fig13][Figure 4.13]]. The i-nodes are fixed-length entries that contain most of the information about a file.
 
-[[../Images/image01329.jpeg]]
+[[./Images/image01329.jpeg]]
 *Figure 4.13* Disk drive, partitions, and a file system
 
 If we examine the i-node and data block portion of a cylinder group in more detail, we could have the arrangement shown in [[file:part0016.xhtml#ch04fig14][Figure 4.14]].
 
-[[../Images/image01330.jpeg]]
+[[./Images/image01330.jpeg]]
 *Figure 4.14* Cylinder group's i-nodes and data blocks in more detail
 
 Note the following points from [[file:part0016.xhtml#ch04fig14][Figure 4.14]].
@@ -723,14 +722,14 @@ $ mkdir testdir
 
 [[file:part0016.xhtml#ch04fig15][Figure 4.15]] shows the result. Note that in this figure, we explicitly show the entries for dot and dot-dot.
 
-[[../Images/image01331.jpeg]]
+[[./Images/image01331.jpeg]]
 *Figure 4.15* Sample cylinder group after creating the directory =testdir=
 
 The i-node whose number is 2549 has a type field of “directory” and a link count equal to 2. Any leaf directory (a directory that does not contain any other directories) always has a link count of 2. The value of 2 comes from the directory entry that names the directory (=testdir=) and from the entry for dot in that directory. The i-node whose number is 1267 has a type field of “directory” and a link count that is greater than or equal to 3. We know that this link count is greater than or equal to 3 because, at a minimum, the i-node is pointed to from the directory entry that names it (which we don't show in [[file:part0016.xhtml#ch04fig15][Figure 4.15]]), from dot, and from dot-dot in the =testdir= directory. Note that every subdirectory in a parent directory causes the parent directory's link count to be increased by 1.
 
 This format is similar to the classic format of the UNIX file system, which is described in detail in Chapter 4 of Bach [[[file:part0038.xhtml#bib01_14][1986]]]. Refer to Chapter 7 of McKusick et al. [[[file:part0038.xhtml#bib01_47][1996]]] or Chapter 8 of McKusick and Neville-Neil [[[file:part0038.xhtml#bib01_48][2005]]] for additional information on the changes made with the Berkeley fast file system. See Chapter 15 of McDougall and Mauro [[[file:part0038.xhtml#bib01_49][2007]]] for details on =UFS=, the Solaris version of the Berkeley fast file system. For information on the =HFS= file system format used in Mac OS X, see Chapter 12 of Singh [[[file:part0038.xhtml#bib01_61][2006]]].
 
-*** 4.15. link, linkat, unlink, unlinkat, and remove Functions
+** 4.15. link, linkat, unlink, unlinkat, and remove Functions
 
 
 As we saw in the previous section, a file can have multiple directory entries pointing to its i-node. We can use either the =link= function or the =linkat= function to create a link to an existing file.
@@ -865,7 +864,7 @@ Returns: 0 if OK, --1 on error
 
 ISO C specifies the =remove= function to delete a file. The name was changed from the historical UNIX name of =unlink= because most non-UNIX systems that implement the C standard didn't support the concept of links to a file at the time.
 
-*** 4.16. rename and renameat Functions
+** 4.16. rename and renameat Functions
 
 
 A file or a directory is renamed with either the =rename= or =renameat= function.
@@ -903,7 +902,7 @@ If /newname/ already exists, we need permissions as if we were deleting it. Also
 
 The =renameat= function provides the same functionality as the =rename= function, except when either /oldname/ or /newname/ refers to a relative pathname. If /oldname/ specifies a relative pathname, it is evaluated relative to the directory referenced by /oldfd/. Similarly, /newname/ is evaluated relative to the directory referenced by /newfd/ if /newname/ specifies a relative pathname. Either the /oldfd/ or /newfd/ arguments (or both) can be set to =AT_FDCWD= to evaluate the corresponding pathname relative to the current directory.
 
-*** 4.17. Symbolic Links
+** 4.17. Symbolic Links
 
 
 A symbolic link is an indirect pointer to a file, unlike the hard links described in the previous section, which pointed directly to the i-node of the file. Symbolic links were introduced to get around the limitations of hard links.
@@ -916,7 +915,7 @@ There are no file system limitations on a symbolic link and what it points to, a
 
 When using functions that refer to a file by name, we always need to know whether the function follows a symbolic link. If the function follows a symbolic link, a pathname argument to the function refers to the file pointed to by the symbolic link. Otherwise, a pathname argument refers to the link itself, not the file pointed to by the link. [[file:part0016.xhtml#ch04fig17][Figure 4.17]] summarizes whether the functions described in this chapter follow a symbolic link. The functions =mkdir=, =mkfifo=, =mknod=, and =rmdir= do not appear in this figure, as they return an error when the pathname is a symbolic link. Also, the functions that take a file descriptor argument, such as =fstat= and =fchmod=, are not listed, as the function that returns the file descriptor (usually =open=) handles the symbolic link. Historically, implementations have differed in whether =chown= follows symbolic links. In all modern systems, however, =chown= does follow symbolic links.
 
-[[../Images/image01332.jpeg]]
+[[./Images/image01332.jpeg]]
 *Figure 4.17* Treatment of symbolic links by various functions
 
 Symbolic links were introduced with 4.2BSD. Initially, =chown= didn't follow symbolic links, but this behavior was changed in 4.4BSD. System V included support for symbolic links in SVR4, but diverged from the original BSD behavior by implementing =chown= to follow symbolic links. In older versions of Linux (those before version 2.1.81), =chown= didn't follow symbolic links. From version 2.1.81 onward, =chown= follows symbolic links. With FreeBSD 8.0, Mac OS X 10.6.8, and Solaris 10, =chown= follows symbolic links. All of these platforms provide implementations of =lchown= to change the ownership of symbolic links themselves.
@@ -939,7 +938,7 @@ lrwxrwxrwx  1  sar          6 Jan 22 00:16 testdir -> ../foo
 
 This creates a directory =foo= that contains the file =a= and a symbolic link that points to =foo=. We show this arrangement in [[file:part0016.xhtml#ch04fig18][Figure 4.18]], drawing a directory as a circle and a file as a square.
 
-[[../Images/image01333.jpeg]]
+[[./Images/image01333.jpeg]]
 *Figure 4.18* Symbolic link =testdir= that creates a loop
 
 If we write a simple program that uses the standard function =ftw=(3) on Solaris to descend through a file hierarchy, printing each pathname encountered, the output is
@@ -980,7 +979,7 @@ lrwxrwxrwx  1 sar       13 Jan 22 00:26 myfile -> /no/such/file
 
 The file =myfile= does exist, yet =cat= says there is no such file, because =myfile= is a symbolic link and the file pointed to by the symbolic link doesn't exist. The =-l= option to =ls= gives us two hints: the first character is an =l=, which means a symbolic link, and the sequence =->= also indicates a symbolic link. The =ls= command has another option (=-F=) that appends an at-sign (@) to filenames that are symbolic links, which can help us spot symbolic links in a directory listing without the =-l= option.
 
-*** 4.18. Creating and Reading Symbolic Links
+** 4.18. Creating and Reading Symbolic Links
 
 
 A symbolic link is created with either the =symlink= or =symlinkat= function.
@@ -1025,14 +1024,14 @@ These functions combine the actions of =open=, =read=, and =close=. If successfu
 
 The =readlinkat= function behaves the same way as the =readlink= function when the /pathname/ argument specifies an absolute pathname or when the /fd/ argument has the special value =AT_FDCWD=. However, when the /fd/ argument is a valid file descriptor of an open directory and the /pathname/ argument is a relative pathname, then =readlinkat= evaluates the pathname relative to the open directory represented by /fd/.
 
-*** 4.19. File Times
+** 4.19. File Times
 
 
 In [[file:part0016.xhtml#ch04lev1sec2][Section 4.2]], we discussed how the 2008 version of the Single UNIX Specification increased the resolution of the time fields in the =stat= structure from seconds to seconds plus nanoseconds. The actual resolution stored with each file's attributes depends on the file system implementation. For file systems that store timestamps in second granularity, the nanoseconds fields will be filled with zeros. For file systems that store timestamps in a resolution higher than seconds, the partial seconds value will be converted into nanoseconds and returned in the nanoseconds fields.
 
 Three time fields are maintained for each file. Their purpose is summarized in [[file:part0016.xhtml#ch04fig19][Figure 4.19]].
 
-[[../Images/image01334.jpeg]]
+[[./Images/image01334.jpeg]]
 *Figure 4.19* The three time values associated with each file
 
 Note the difference between the modification time (=st_mtim=) and the changed-status time (=st_ctim=). The modification time indicates when the contents of the file were last modified. The changed-status time indicates when the i-node of the file was last modified. In this chapter, we've described many operations that affect the i-node without changing the actual contents of the file: changing the file access permissions, changing the user ID, changing the number of links, and so on. Because all the information in the i-node is stored separately from the actual contents of the file, we need the changed-status time, in addition to the modification time.
@@ -1047,12 +1046,12 @@ The =ls= command displays or sorts only on one of the three time values. By defa
 
 [[file:part0016.xhtml#ch04fig20][Figure 4.20]] summarizes the effects of the various functions that we've described on these three times. Recall from [[file:part0016.xhtml#ch04lev1sec14][Section 4.14]] that a directory is simply a file containing directory entries: filenames and associated i-node numbers. Adding, deleting, or modifying these directory entries can affect the three times associated with that directory. This is why [[file:part0016.xhtml#ch04fig20][Figure 4.20]] contains one column for the three times associated with the file or directory and another column for the three times associated with the parent directory of the referenced file or directory. For example, creating a new file affects the directory that contains the new file, and it affects the i-node for the new file. Reading or writing a file, however, affects only the i-node of the file and has no effect on the directory.
 
-[[../Images/image01335.jpeg]]
+[[./Images/image01335.jpeg]]
 *Figure 4.20* Effect of various functions on the access, modification, and changed-status times
 
 (The =mkdir= and =rmdir= functions are covered in [[file:part0016.xhtml#ch04lev1sec21][Section 4.21]]. The =utimes=, =utimensat=, and =futimens= functions are covered in the next section. The seven =exec= functions are described in [[file:part0020.xhtml#ch08lev1sec10][Section 8.10]]. We describe the =mkfifo= and =pipe= functions in [[file:part0027.xhtml#ch15][Chapter 15]].)
 
-*** 4.20. futimens, utimensat, and utimes Functions
+** 4.20. futimens, utimensat, and utimes Functions
 
 
 Several functions are available to change the access time and the modification time of a file. The =futimens= and =utimensat= functions provide nanosecond granularity for specifying timestamps, using the =timespec= structure (the same structure used by the =stat= family of functions; see [[file:part0016.xhtml#ch04lev1sec2][Section 4.2]]).
@@ -1187,7 +1186,7 @@ $ ls -lc changemod times        and the changed-status times
 
 As we would expect, the last-modification times and the last-access times have not changed. The changed-status times, however, have changed to the time that the program was run.
 
-*** 4.21. mkdir, mkdirat, and rmdir Functions
+** 4.21. mkdir, mkdirat, and rmdir Functions
 
 
 Directories are created with the =mkdir= and =mkdirat= functions, and deleted with the =rmdir= function.
@@ -1236,7 +1235,7 @@ Returns: 0 if OK, --1 on error
 
 If the link count of the directory becomes 0 with this call, and if no other process has the directory open, then the space occupied by the directory is freed. If one or more processes have the directory open when the link count reaches 0, the last link is removed and the dot and dot-dot entries are removed before this function returns. Additionally, no new files can be created in the directory. The directory is not freed, however, until the last process closes it. (Even though some other process has the directory open, it can't be doing much in the directory, as the directory had to be empty for the =rmdir= function to succeed.)
 
-*** 4.22. Reading Directories
+** 4.22. Reading Directories
 
 
 Directories can be read by anyone who has access permission to read the directory. But only the kernel can write to a directory, to preserve file system sanity. Recall from [[file:part0016.xhtml#ch04lev1sec5][Section 4.5]] that the write permission bits and execute permission bits for a directory determine if we can create new files in the directory and remove files from the directory---they don't specify if we can write to the directory itself.
@@ -1464,7 +1463,7 @@ To illustrate the =ftw= and =nftw= functions, we have provided more generality i
 
 For additional information on descending through a file system and using this technique in many standard UNIX System commands---=find=, =ls=, =tar=, and so on --- refer to Fowler, Korn, and Vo [[[file:part0038.xhtml#bib01_21][1989]]].
 
-*** 4.23. chdir, fchdir, and getcwd Functions
+** 4.23. chdir, fchdir, and getcwd Functions
 
 
 Every process has a current working directory. This directory is where the search for all relative pathnames starts (i.e., with all pathnames that do not begin with a slash). When a user logs in to a UNIX system, the current working directory normally starts at the directory specified by the sixth field in the =/etc/passwd= file --- the user's home directory. The current working directory is an attribute of a process; the home directory is an attribute of a login name.
@@ -1584,7 +1583,7 @@ The =getcwd= function is useful when we have an application that needs to return
 
 The =fchdir= function provides us with an easy way to accomplish this task. Instead of calling =getcwd=, we can =open= the current directory and save the file descriptor before we change to a different location in the file system. When we want to return to where we started, we can simply pass the file descriptor to =fchdir=.
 
-*** 4.24. Device Special Files
+** 4.24. Device Special Files
 
 
 The two fields =st_dev= and =st_rdev= are often confused. We'll need to use these fields in [[file:part0030.xhtml#ch18lev1sec9][Section 18.9]] when we write the =ttyname= function. The rules for their use are simple.
@@ -1669,12 +1668,12 @@ We then use =ls= to look at the two disk devices reported by =mount= and the two
 
 Note that the filenames and i-nodes for the two terminal devices (=st_dev=) are on device 0/5---the =devtmpfs= pseudo file system, which implements the =/dev=---but that their actual device numbers are 4/0 and 4/1.
 
-*** 4.25. Summary of File Access Permission Bits
+** 4.25. Summary of File Access Permission Bits
 
 
 We've covered all the file access permission bits, some of which serve multiple purposes. [[file:part0016.xhtml#ch04fig26][Figure 4.26]] summarizes these permission bits and their interpretation when applied to a regular file and a directory.
 
-[[../Images/image01336.jpeg]]
+[[./Images/image01336.jpeg]]
 *Figure 4.26* Summary of file access permission bits
 
 The final nine constants can also be grouped into threes, as follows:
@@ -1685,12 +1684,12 @@ S_IRWXU = S_IRUSR | S_IWUSR | S_IXUSR
 S_IRWXG = S_IRGRP | S_IWGRP | S_IXGRP
 S_IRWXO = S_IROTH | S_IWOTH | S_IXOTH
 
-*** 4.26. Summary
+** 4.26. Summary
 
 
 This chapter has centered on the =stat= function. We've gone through each member in the =stat= structure in detail. This, in turn, led us to examine all the attributes of UNIX files and directories. We've looked at how files and directories might be laid out in a file system, and we've seen how to navigate the file system namespace. A thorough understanding of all the properties of files and directories and all the functions that operate on them is essential to UNIX programming.
 
-*** Exercises
+** Exercises
 
 
 4.1 Modify the program in [[file:part0016.xhtml#ch04fig03][Figure 4.3]] to use =stat= instead of =lstat=. What changes if one of the command-line arguments is a symbolic link?
@@ -1742,12 +1741,12 @@ We then use =ls= to look at the two disk devices reported by =mount= and the two
 
 Note that the filenames and i-nodes for the two terminal devices (=st_dev=) are on device 0/5---the =devtmpfs= pseudo file system, which implements the =/dev=---but that their actual device numbers are 4/0 and 4/1.
 
-*** 4.25. Summary of File Access Permission Bits
+** 4.25. Summary of File Access Permission Bits
 
 
 We've covered all the file access permission bits, some of which serve multiple purposes. [[file:part0016.xhtml#ch04fig26][Figure 4.26]] summarizes these permission bits and their interpretation when applied to a regular file and a directory.
 
-[[../Images/image01336.jpeg]]
+[[./Images/image01336.jpeg]]
 *Figure 4.26* Summary of file access permission bits
 
 The final nine constants can also be grouped into threes, as follows:
@@ -1758,12 +1757,12 @@ S_IRWXU = S_IRUSR | S_IWUSR | S_IXUSR
 S_IRWXG = S_IRGRP | S_IWGRP | S_IXGRP
 S_IRWXO = S_IROTH | S_IWOTH | S_IXOTH
 
-*** 4.26. Summary
+** 4.26. Summary
 
 
 This chapter has centered on the =stat= function. We've gone through each member in the =stat= structure in detail. This, in turn, led us to examine all the attributes of UNIX files and directories. We've looked at how files and directories might be laid out in a file system, and we've seen how to navigate the file system namespace. A thorough understanding of all the properties of files and directories and all the functions that operate on them is essential to UNIX programming.
 
-*** Exercises
+** Exercises
 
 
 4.1 Modify the program in [[file:part0016.xhtml#ch04fig03][Figure 4.3]] to use =stat= instead of =lstat=. What changes if one of the command-line arguments is a symbolic link?

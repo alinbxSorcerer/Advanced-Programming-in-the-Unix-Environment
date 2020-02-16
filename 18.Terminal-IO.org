@@ -1,7 +1,7 @@
-** 18. Terminal I/O
+* 18. Terminal I/O
 
 
-*** 18.1. Introduction
+** 18.1. Introduction
 
 
 The handling of terminal I/O is a messy area, regardless of the operating system. The UNIX System is no exception. The manual page for terminal I/O is usually one of the longest in most editions of the programmer's manuals.
@@ -10,7 +10,7 @@ With the UNIX System, a schism formed in the late 1970s when System III develope
 
 Part of the complexity of the terminal I/O system occurs because people use terminal I/O for so many different things: terminals, hard-wired lines between computers, modems, printers, and so on.
 
-*** 18.2. Overview
+** 18.2. Overview
 
 
 Terminal I/O has two modes:
@@ -97,7 +97,7 @@ The relationships among the 13 functions shown in [[file:part0030.xhtml#ch18fig0
 
 POSIX.1 doesn't specify where in the =termios= structure the baud rate information is stored; that is an implementation detail. Some systems, such as Solaris, store this information in the =c_cflag= field. Linux and BSD-derived systems, such as FreeBSD and Mac OS X, have two separate fields in the structure: one for the input speed and one for the output speed.
 
-*** 18.3. Special Input Characters
+** 18.3. Special Input Characters
 
 
 POSIX.1 defines 11 characters that are handled specially on input. Implementations define additional special characters. [[file:part0030.xhtml#ch18fig09][Figure 18.9]] summarizes these special characters.
@@ -254,7 +254,7 @@ Most old serial terminals have a key labeled BREAK that generates the BREAK cond
 
 For asynchronous serial data transmission, a BREAK is a sequence of zero-valued bits that continues for longer than the time required to send one byte. The entire sequence of zero-valued bits is considered a single BREAK. In [[file:part0030.xhtml#ch18lev1sec8][Section 18.8]], we'll see how to send a BREAK with the =tcsendbreak= function.
 
-*** 18.4. Getting and Setting Terminal Attributes
+** 18.4. Getting and Setting Terminal Attributes
 
 
 To get and set a =termios= structure, we call two functions: =tcgetattr= and =tcsetattr=. This is how we examine and modify the various option flags and special characters to make the terminal operate the way we want it to.
@@ -293,7 +293,7 @@ The return status of =tcsetattr= can be confusing to use correctly. This functio
 
 What are the attributes of a terminal we open for the first time? The answer is “it depends.” Some systems might initialize the terminal attributes to implementation-defined values. Other systems might leave the attributes with the values they had the last time that the terminal was used. If we want to be sure that the terminal behavior conforms to the standard, we can open the terminal device with the =O_TTY_INIT= flag (see [[file:part0015.xhtml#ch03lev1sec3][Section 3.3]]). This will ensure that when we call =tcgetattr=, any nonstandard portions of the =termios= structure will be initialized so the terminal will behave as expected when we change the attributes and call =tcsetattr=.
 
-*** 18.5. Terminal Option Flags
+** 18.5. Terminal Option Flags
 
 
 In this section, we list all the various terminal option flags, expanding the descriptions from [[file:part0030.xhtml#ch18fig03][Figures 18.3]] through [[file:part0030.xhtml#ch18fig06][18.6]]. This list is alphabetical and indicates in which of the four terminal flag fields the option appears. (The field that controls a given option is usually not apparent from the option name alone.) We also note whether each option is defined by the Single UNIX Specification and list the platforms that support it.
@@ -646,7 +646,7 @@ The value =XTABS= is equal to =TAB3=. This value causes the system to expand tab
 
 (=c_lflag=, Linux, Solaris) If set and if =ICANON= is also set, the terminal is assumed to be uppercase only, and all input is converted to lowercase. To input an uppercase character, precede it with a backslash. Similarly, the system outputs an uppercase character by preceding it with a backslash. (This option flag is obsolete today, since most, if not all, uppercase-only terminals have disappeared.)
 
-*** 18.6. stty Command
+** 18.6. stty Command
 
 
 All the options described in the previous section can be examined and changed from within a program with the =tcgetattr= and =tcsetattr= functions ([[file:part0030.xhtml#ch18lev1sec4][Section 18.4]]) or from the command line (or a shell script) with the =stty=(1) command. This command is simply an interface to the first six functions that we listed in [[file:part0030.xhtml#ch18fig07][Figure 18.7]]. If we execute this command with its =-a= option, it displays all the terminal options:
@@ -676,7 +676,7 @@ The =stty= command uses its standard input to get and set the terminal option fl
 
 if we are interested in discovering the settings on the terminal named =tty1a=.
 
-*** 18.7. Baud Rate Functions
+** 18.7. Baud Rate Functions
 
 
 The term /baud rate/ is a historical term that should be referred to today as “bits per second.” Although most terminal devices use the same baud rate for both input and output, the capability exists to set the two rates to different values, if the hardware allows this.
@@ -711,7 +711,7 @@ To use these functions, we must realize that the input and output baud rates are
 
 The four baud rate functions exist to insulate applications from differences in the way that implementations represent baud rates in the =termios= structure. Linux and BSD-derived platforms tend to store baud rates as numeric values equal to the rates (i.e., 9,600 baud is stored as the value 9,600), whereas System V--derived platforms (such as Solaris) tend to encode the baud rate in a bitmask. The speed values we get from the =cfget= functions and pass to the =cfset= functions are untranslated from their representation as they are stored in the =termios= structure.
 
-*** 18.8. Line Control Functions
+** 18.8. Line Control Functions
 
 
 The following four functions provide line control capability for terminal devices. All four require that /fd/ refer to a terminal device; otherwise, --1 is returned with =errno= set to =ENOTTY=.
@@ -768,7 +768,7 @@ Both the input and the output queues are flushed.
 
 The =tcsendbreak= function transmits a continuous stream of zero bits for a specified duration. If the /duration/ argument is 0, the transmission lasts between 0.25 second and 0.5 second. POSIX.1 specifies that if /duration/ is nonzero, the transmission time is implementation dependent.
 
-*** 18.9. Terminal Identification
+** 18.9. Terminal Identification
 
 
 Historically, the name of the controlling terminal in most versions of the UNIX System has been =/dev/tty=. POSIX.1 provides a runtime function that we can call to determine the name of the controlling terminal.
@@ -1092,7 +1092,7 @@ fd 0: /dev/console
 fd 1: /dev/ttys001
 fd 2: not a tty
 
-*** 18.10. Canonical Mode
+** 18.10. Canonical Mode
 
 
 Canonical mode is simple: we issue a read, and the terminal driver returns when a line has been entered. Several conditions cause the read to return.
@@ -1207,7 +1207,7 @@ main(void)
 
 Whenever a program that calls =getpass= is done with the cleartext password, the program should zero it out in memory, just to be safe. If the program were to generate a =core= file that others might be able to read or if some other process were somehow able to read our memory, they might be able to read the cleartext password. (By “cleartext,” we mean the password that we type at the prompt that is printed by =getpass=. Most UNIX system programs then modify this cleartext password, turning it into an “encrypted” password. The =pw_passwd= field in the password file ([[file:part0018.xhtml#ch06lev1sec2][Section 6.2]]), for example, contains the encrypted password, not the cleartext password.)
 
-*** 18.11. Noncanonical Mode
+** 18.11. Noncanonical Mode
 
 
 Noncanonical mode is specified by turning off the =ICANON= flag in the =c_lflag= field of the =termios= structure. In noncanonical mode, the input data is not assembled into lines. The following special characters ([[file:part0030.xhtml#ch18lev1sec3][Section 18.3]]) are not processed: ERASE, KILL, EOF, NL, EOL, EOL2, CR, REPRINT, STATUS, and WERASE.
@@ -1526,7 +1526,7 @@ signal caught              type interrupt key
 
 In raw mode, the characters entered were Control-D (04) and the special function key F7. On the terminal being used, this function key generated five characters: /ESC/ (033), /[/ (0133), /1/ (061), /8/ (070), and /~/ (0176). Note that with the output processing turned off in raw mode (=~OPOST=), we do not get a carriage return output after each character. Also note that special-character processing is disabled in cbreak mode (so, for example, Control-D, the end-of-file character, and backspace aren't handled specially), whereas the terminal-generated signals are still processed.
 
-*** 18.12. Terminal Window Size
+** 18.12. Terminal Window Size
 
 
 Most UNIX systems provide a way to keep track of the current terminal window size and to have the kernel notify the foreground process group when the size changes. The kernel maintains a =winsize= structure for every terminal and pseudo terminal:
@@ -1609,7 +1609,7 @@ SIGWINCH received          and again
 42 rows, 33 columns
 ^C $                       type the interrupt key to terminate
 
-*** 18.13. termcap, terminfo, and curses
+** 18.13. termcap, terminfo, and curses
 
 
 =termcap= stands for “terminal capability,” and it refers to the text file =/etc/termcap= and a set of routines used to read this file. The =termcap= scheme was developed at Berkeley to support the =vi= editor. The =termcap= file contains descriptions of various terminals: which features the terminal supports (e.g., how many lines and rows, whether the terminal support backspace) and how to make the terminal perform certain operations (e.g., clear the screen, move the cursor to a given location). Taking this information out of the compiled program and placing it into a text file that can easily be edited allows the =vi= editor to run on many different terminals.
@@ -1626,14 +1626,14 @@ The =ncurses= library, a free version that is compatible with the SVR4 =curses= 
 
 Neither =termcap= nor =terminfo=, by itself, addresses the problems we've been looking at in this chapter: changing the terminal's mode, changing one of the terminal special characters, handling the window size, and so on. What they do provide is a way to perform typical operations (clear the screen, move the cursor) on a wide variety of terminals. On the other hand, =curses= does help with some of the details that we've addressed in this chapter. Functions are provided by =curses= to set raw mode, set cbreak mode, turn echo on and off, and the like. Note that the =curses= library is designed for character-based dumb terminals, which have mostly been replaced by pixel-based graphics terminals today.
 
-*** 18.14. Summary
+** 18.14. Summary
 
 
 Terminals have many features and options, most of which we're able to change to suit our needs. In this chapter, we described numerous functions that change a terminal's operation --- namely, special input characters and the option flags. We also looked at all the terminal special characters and the many options that can be set or reset for a terminal device.
 
 There are two modes of terminal input---canonical (line at a time) and noncanonical. We showed examples of both modes and provided functions that map between the POSIX.1 terminal options and the older BSD cbreak and raw modes. We also described how to fetch and change the window size of a terminal.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch18ans01][18.1]]* Write a program that calls =tty_raw= and terminates (without resetting the terminal mode). If your system provides the =reset=(1) command (all four systems described in this text do), use it to restore the terminal mode.
@@ -1655,14 +1655,14 @@ The =ncurses= library, a free version that is compatible with the SVR4 =curses= 
 
 Neither =termcap= nor =terminfo=, by itself, addresses the problems we've been looking at in this chapter: changing the terminal's mode, changing one of the terminal special characters, handling the window size, and so on. What they do provide is a way to perform typical operations (clear the screen, move the cursor) on a wide variety of terminals. On the other hand, =curses= does help with some of the details that we've addressed in this chapter. Functions are provided by =curses= to set raw mode, set cbreak mode, turn echo on and off, and the like. Note that the =curses= library is designed for character-based dumb terminals, which have mostly been replaced by pixel-based graphics terminals today.
 
-*** 18.14. Summary
+** 18.14. Summary
 
 
 Terminals have many features and options, most of which we're able to change to suit our needs. In this chapter, we described numerous functions that change a terminal's operation --- namely, special input characters and the option flags. We also looked at all the terminal special characters and the many options that can be set or reset for a terminal device.
 
 There are two modes of terminal input---canonical (line at a time) and noncanonical. We showed examples of both modes and provided functions that map between the POSIX.1 terminal options and the older BSD cbreak and raw modes. We also described how to fetch and change the window size of a terminal.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch18ans01][18.1]]* Write a program that calls =tty_raw= and terminates (without resetting the terminal mode). If your system provides the =reset=(1) command (all four systems described in this text do), use it to restore the terminal mode.

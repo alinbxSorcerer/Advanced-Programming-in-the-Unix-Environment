@@ -1,7 +1,7 @@
-** 10. Signals
+* 10. Signals
 
 
-*** 10.1. Introduction
+** 10.1. Introduction
 
 
 Signals are software interrupts. Most nontrivial application programs need to deal with signals. Signals provide a way of handling asynchronous events---for example, a user at a terminal typing the interrupt key to stop a program or the next program in a pipeline terminating prematurely.
@@ -10,7 +10,7 @@ Signals have been provided since the early versions of the UNIX System, but the 
 
 In this chapter, we start with an overview of signals and a description of what each signal is normally used for. Then we look at the problems with earlier implementations. It is often important to understand what is wrong with an implementation before seeing how to do things correctly. This chapter contains numerous examples that are not entirely correct and a discussion of the defects.
 
-*** 10.2. Signal Concepts
+** 10.2. Signal Concepts
 
 
 First, every signal has a name. These names all begin with the three characters =SIG=. For example, =SIGABRT= is the abort signal that is generated when a process calls the =abort= function. =SIGALRM= is the alarm signal that is generated when the timer set by the =alarm= function goes off. Version 7 had 15 different signals; SVR4 and 4.4BSD both had 31 different signals. FreeBSD 8.0 supports 32 different signals. Mac OS X 10.6.8 and Linux 3.2.0 each support 31 different signals, whereas Solaris 10 supports 40 different signals. FreeBSD, Linux, and Solaris, however, support additional application-defined signals introduced to support real-time applications. Although the POSIX real-time extensions aren't covered in this book (refer to Gallmeister [[[file:part0038.xhtml#bib01_22][1995]]] for more information), as of SUSv4 the real-time signal interfaces have moved to the base specification.
@@ -287,7 +287,7 @@ Just as with =SIGXCPU=, the default action taken with =SIGXFSZ= depends on the o
 
 This signal is defined only by Solaris. It is optionally used to notify processes that have exceeded a preconfigured resource value. The Solaris resource control mechanism is a general facility for controlling the use of shared resources among independent application sets.
 
-*** 10.3. signal Function
+** 10.3. signal Function
 
 
 The simplest interface to the signal features of the UNIX System is the =signal= function.
@@ -393,7 +393,7 @@ $ kill 7216                           now send it SIG
 
 When we send the =SIGTERM= signal, the process is terminated, since it doesn't catch the signal, and the default action for the signal is termination.
 
-**** Program Start-Up
+*** Program Start-Up
 
 
 When a program is executed, the status of all signals is either default or ignore. Normally, all signals are set to their default action, unless the process that calls =exec= is ignoring the signal. Specifically, the =exec= functions change the disposition of any signals being caught to their default action and leave the status of all other signals alone. (Naturally, a signal that is being caught by a process that calls =exec= cannot be caught by the same function in the new program, since the address of the signal-catching function in the caller probably has no meaning in the new program file that is executed.)
@@ -419,12 +419,12 @@ Following this approach, the process catches the signal only if the signal is no
 
 These two calls to =signal= also show a limitation of the =signal= function: we are not able to determine the current disposition of a signal without changing the disposition. We'll see later in this chapter how the =sigaction= function allows us to determine a signal's disposition without changing it.
 
-**** Process Creation
+*** Process Creation
 
 
 When a process calls =fork=, the child inherits the parent's signal dispositions. Here, since the child starts off with a copy of the parent's memory image, the address of a signal-catching function has meaning in the child.
 
-*** 10.4. Unreliable Signals
+** 10.4. Unreliable Signals
 
 
 In earlier versions of the UNIX System (such as Version 7), signals were unreliable. By this we mean that signals could get lost: a signal could occur and the process would never know about it. Also, a process had little control over a signal: a process could catch the signal or ignore it. Sometimes, we would like to tell the kernel to block a signal: don't ignore it, just remember if it occurs, and tell us later when we're ready.
@@ -482,7 +482,7 @@ sig_int()
 
 Here, the process is calling the =pause= function to put it to sleep until a signal is caught. When the signal is caught, the signal handler just sets the flag =sig_int_flag= to a nonzero value. The process is automatically awakened by the kernel after the signal handler returns, notices that the flag is nonzero, and does whatever it needs to do. But there is a window of time when things can go wrong. If the signal occurs after the test of =sig_int_flag= but before the call to =pause=, the process could go to sleep forever (assuming that the signal is never generated again). This occurrence of the signal is lost. This is another example of some code that isn't right, yet it works most of the time. Debugging this type of problem can be difficult.
 
-*** 10.5. Interrupted System Calls
+** 10.5. Interrupted System Calls
 
 
 A characteristic of earlier UNIX systems was that if a process caught a signal while the process was blocked in a “slow” system call, the system call was interrupted. The system call returned an error and =errno= was set to =EINTR=. This was done under the assumption that since a signal occurred and the process caught it, there is a good chance that something has happened that should wake up the blocked system call.
@@ -539,7 +539,7 @@ In [[file:part0022.xhtml#ch10fig18][Figure 10.18]], we provide our own version o
 
 We talk more about interrupted system calls in [[file:part0026.xhtml#ch14lev1sec4][Section 14.4]] with regard to the =select= and =poll= functions.
 
-*** 10.6. Reentrant Functions
+** 10.6. Reentrant Functions
 
 
 When a signal that is being caught is handled by a process, the normal sequence of instructions being executed by the process is temporarily interrupted by the signal handler. The process then continues executing, but the instructions in the signal handler are now executed. If the signal handler returns (instead of calling =exit= or =longjmp=, for example), then the normal sequence of instructions that the process was executing when the signal was caught continues executing. (This is similar to what happens when a hardware interrupt occurs.) But in the signal handler, we can't tell where the process was executing when the signal was caught. What if the process was in the middle of allocating additional memory on its heap using =malloc=, and we call =malloc= from the signal handler? Or, what if the process was in the middle of a call to a function, such as =getpwnam= ([[file:part0018.xhtml#ch06lev1sec2][Section 6.2]]), that stores its result in a static location, and we call the same function from the signal handler? In the =malloc= example, havoc can result for the process, since =malloc= usually maintains a linked list of all its allocated areas, and it may have been in the middle of changing this list. In the case of =getpwnam=, the information returned to the normal caller can get overwritten with the information returned to the signal handler.
@@ -599,7 +599,7 @@ When this program was run, the results were random. Usually, the program would b
 
 As shown by this example, if we call a nonreentrant function from a signal handler, the results are unpredictable.
 
-*** 10.7. SIGCLD Semantics
+** 10.7. SIGCLD Semantics
 
 
 Two signals that continually generate confusion are =SIGCLD= and =SIGCHLD=. The name =SIGCLD= (without the =H=) is from System V, and this signal has different semantics from the BSD signal, named =SIGCHLD=. The POSIX.1 signal is also named =SIGCHLD=.
@@ -686,7 +686,7 @@ Be cognizant of the =SIGCHLD= semantics for your implementation. Be especially a
 
 Of the four platforms described in this text, only Linux 3.2.0 and Solaris 10 define =SIGCLD=. On these platforms, =SIGCLD= is equivalent to =SIGCHLD=.
 
-*** 10.8. Reliable-Signal Terminology and Semantics
+** 10.8. Reliable-Signal Terminology and Semantics
 
 
 We need to define some of the terms used throughout our discussion of signals. First, a signal is /generated/ for a process (or sent to a process) when the event that causes the signal occurs. The event could be a hardware exception (e.g., divide by 0), a software condition (e.g., an =alarm= timer expiring), a terminal-generated signal, or a call to the =kill= function. When the signal is generated, the kernel usually sets a flag of some form in the process table.
@@ -709,7 +709,7 @@ Each process has a /signal mask/ that defines the set of signals currently block
 
 Since it is possible for the number of signals to exceed the number of bits in an integer, POSIX.1 defines a data type, called =sigset_t=, that holds a /signal set/. The signal mask, for example, is stored in one of these signal sets. We describe five functions that operate on signal sets in [[file:part0022.xhtml#ch10lev1sec11][Section 10.11]].
 
-*** 10.9. kill and raise Functions
+** 10.9. kill and raise Functions
 
 
 The =kill= function sends a signal to a process or a group of processes. The =raise= function allows a process to send a signal to itself.
@@ -762,7 +762,7 @@ Also understand that the test for process existence is not atomic. By the time t
 
 If the call to =kill= causes the signal to be generated for the calling process and if the signal is not blocked, either /signo/ or some other pending, unblocked signal is delivered to the process before =kill= returns. (Additional conditions occur with threads; see [[file:part0024.xhtml#ch12lev1sec8][Section 12.8]] for more information.)
 
-*** 10.10. alarm and pause Functions
+** 10.10. alarm and pause Functions
 
 
 The =alarm= function allows us to set a timer that will expire at a specified time in the future. When the timer expires, the =SIGALRM= signal is generated. If we ignore or don't catch this signal, its default action is to terminate the process.
@@ -1034,7 +1034,7 @@ This version works as expected, regardless of whether the system restarts interr
 
 If we want to set a time limit on an I/O operation, we need to use =longjmp=, as shown previously, while recognizing its possible interaction with other signal handlers. Another option is to use the =select= or =poll= functions, described in [[file:part0026.xhtml#ch14lev2sec7][Sections 14.4.1]] and [[file:part0026.xhtml#ch14lev2sec8][14.4.2]].
 
-*** 10.11. Signal Sets
+** 10.11. Signal Sets
 
 
 We need a data type to represent multiple signals---a /signal set/. We'll use this data type with such functions as =sigprocmask= (in the next section) to tell the kernel not to allow any of the signals in the set to occur. As we mentioned earlier, the number of different signals can exceed the number of bits in an integer, so in general we can't use an integer to represent the set with one bit per signal. POSIX.1 defines the data type =sigset_t= to contain a signal set and the following five functions to manipulate signal sets.
@@ -1065,7 +1065,7 @@ The function =sigemptyset= initializes the signal set pointed to by /set/ so tha
 
 Once we have initialized a signal set, we can add and delete specific signals in the set. The function =sigaddset= adds a single signal to an existing set, and =sigdelset= removes a single signal from a set. In all the functions that take a signal set as an argument, we always pass the address of the signal set as the argument.
 
-**** Implementation
+*** Implementation
 
 
 If the implementation has fewer signals than bits in an integer, a signal set can be implemented using one bit per signal. For the remainder of this section, assume that an implementation has 31 signals and 32-bit integers. The =sigemptyset= function zeros the integer, and the =sigfillset= function turns on all the bits in the integer. These two functions can be implemented as macros in the =<signal.h>= header:
@@ -1129,7 +1129,7 @@ sigismember(const sigset_t *set, int signo)
 
 We might be tempted to implement these three functions as one-line macros in the =<signal.h>= header, but POSIX.1 requires us to check the signal number argument for validity and to set =errno= if it is invalid. This is more difficult to do in a macro than in a function.
 
-*** 10.12. sigprocmask Function
+** 10.12. sigprocmask Function
 
 
 Recall from [[file:part0022.xhtml#ch10lev1sec8][Section 10.8]] that the signal mask of a process is the set of signals currently blocked from delivery to that process. A process can examine its signal mask, change its signal mask, or perform both operations in one step by calling the following function.
@@ -1205,7 +1205,7 @@ pr_mask(const char *str)
 
 To save space, we don't test the signal mask for every signal that we listed in [[file:part0022.xhtml#ch10fig01][Figure 10.1]]. (See [[file:part0022.xhtml#ch10que09][Exercise 10.9]].)
 
-*** 10.13. sigpending Function
+** 10.13. sigpending Function
 
 
 The =sigpending= function returns the set of signals that are blocked from delivery and currently pending for the calling process. The set of signals is returned through the /set/ argument.
@@ -1303,7 +1303,7 @@ SIGQUIT unblocked
 
 The message =Quit(coredump)= is printed by the shell when it sees that its child terminated abnormally. Note that when we run the program the second time, we generate the quit signal ten times while the process is asleep, yet the signal is delivered only once to the process when it's unblocked. This demonstrates that signals are not queued on this system.
 
-*** 10.14. sigaction Function
+** 10.14. sigaction Function
 
 
 The =sigaction= function allows us to examine or modify (or both) the action associated with a particular signal. This function supersedes the =signal= function from earlier releases of the UNIX System. Indeed, at the end of this section, we show an implementation of =signal= using =sigaction=.
@@ -1481,7 +1481,7 @@ signal_intr(int signo, Sigfunc *func)
 
 For improved portability, we specify the =SA_INTERRUPT= flag, if defined by the system, to prevent interrupted system calls from being restarted.
 
-*** 10.15. sigsetjmp and siglongjmp Functions
+** 10.15. sigsetjmp and siglongjmp Functions
 
 
 In [[file:part0019.xhtml#ch07lev1sec10][Section 7.10]], we described the =setjmp= and =longjmp= functions, which can be used for nonlocal branching. The =longjmp= function is often called from a signal handler to return to the main loop of a program, instead of returning from the handler. We saw this approach in [[file:part0022.xhtml#ch10fig08][Figures 10.8]] and [[file:part0022.xhtml#ch10fig11][10.11]].
@@ -1610,7 +1610,7 @@ ending main: SIGUSR1
 
 This means that the =main= function is executing with the =SIGUSR1= signal blocked, after the call to =setjmp=. This probably isn't what we want.
 
-*** 10.16. sigsuspend Function
+** 10.16. sigsuspend Function
 
 
 We have seen how we can change the signal mask for a process to block and unblock selected signals. We can use this technique to protect critical regions of code that we don't want interrupted by a signal. But what if we want to unblock a signal and then =pause=, waiting for the previously blocked signal to occur? Assuming that the signal is =SIGINT=, the incorrect way to do this is
@@ -1937,7 +1937,7 @@ What we would like to be able to do is the following sequence of steps, in order
 
 The =sigsuspend= function helps us only if step 3 is a =pause= operation.
 
-*** 10.17. abort Function
+** 10.17. abort Function
 
 
 We mentioned earlier that the =abort= function causes abnormal program termination.
@@ -2019,7 +2019,7 @@ We first see whether the default action will occur; if so, we flush all the stan
 
 Recall from [[file:part0022.xhtml#ch10lev1sec9][Section 10.9]] that if calling =kill= causes the signal to be generated for the caller, and if the signal is not blocked (which we guarantee in [[file:part0022.xhtml#ch10fig25][Figure 10.25]]), then the signal (or some other pending, unlocked signal) is delivered to the process before =kill= returns. We block all signals except =SIGABRT=, so we know that if the call to =kill= returns, the process caught the signal and the signal handler returned.
 
-*** 10.18. system Function
+** 10.18. system Function
 
 
 In [[file:part0020.xhtml#ch08lev1sec13][Section 8.13]], we showed an implementation of the =system= function. That version, however, did not do any signal handling. POSIX.1 requires that =system= ignore =SIGINT= and =SIGQUIT= and block =SIGCHLD=. Before showing a version that handles these signals correctly, let's see why we need to worry about signal handling.
@@ -2202,7 +2202,7 @@ The problem with this sequence of code is that we have no guarantee after the =f
 
 Note that we have to reset the dispositions of these two signals in the child before the call to =execl=. This allows =execl= to change their dispositions to the default, based on the caller's dispositions, as we described in [[file:part0020.xhtml#ch08lev1sec10][Section 8.10]].
 
-**** Return Value from system
+*** Return Value from system
 
 
 The return value from =system= is the termination status of the shell, which isn't always the termination status of the command string. We saw some examples in [[file:part0020.xhtml#ch08fig23][Figure 8.23]], and the results were as we expected: if we execute a simple command, such as =date=, the termination status is 0. Executing the shell command =exit 44= gave us a termination status of 44. What happens with signals?
@@ -2256,7 +2256,7 @@ Other shells behave differently when handling terminal-generated signals, such a
 
 When writing programs that use the =system= function, be sure to interpret the return value correctly. If you call =fork=, =exec=, and =wait= yourself, the termination status is not the same as if you call =system=.
 
-*** 10.19. sleep, nanosleep, and clock_nanosleep Functions
+** 10.19. sleep, nanosleep, and clock_nanosleep Functions
 
 
 We've used the =sleep= function in numerous examples throughout the text, and we showed two flawed implementations of it in [[file:part0022.xhtml#ch10fig07][Figures 10.7]] and [[file:part0022.xhtml#ch10fig08][10.8]].
@@ -2399,7 +2399,7 @@ The problem with using a relative sleep is that some applications require precis
 
 In older versions of the Single UNIX Specification, the =clock_nanosleep= function belonged to the Clock Selection option. In SUSv4, it was moved to the base.
 
-*** 10.20. sigqueue Function
+** 10.20. sigqueue Function
 
 
 In [[file:part0022.xhtml#ch10lev1sec8][Section 10.8]] we said that most UNIX systems don't queue signals. With the real-time extensions to POSIX.1, some systems began adding support for queueing signals. With SUSv4, the queued signal functionality has moved from the real-time extensions to the base specification.
@@ -2439,7 +2439,7 @@ With the real-time signal enhancements, a separate set of signals was introduced
 
 Mac OS X 10.6.8 doesn't support =sigqueue= or real-time signals. On Solaris 10, =sigqueue= is in the real-time library, =librt=.
 
-*** 10.21. Job-Control Signals
+** 10.21. Job-Control Signals
 
 
 Of the signals shown in [[file:part0022.xhtml#ch10fig01][Figure 10.1]], POSIX.1 considers six to be job-control signals:
@@ -2526,7 +2526,7 @@ When the program in [[file:part0022.xhtml#ch10fig31][Figure 10.31]] starts, it a
 
 When we type the suspend character, the process receives the =SIGTSTP= signal and the signal handler is invoked. At this point, we would do any terminal-related processing: move the cursor to the lower-left corner, restore the terminal mode, and so on. We then send ourself the same signal, =SIGTSTP=, after resetting its disposition to its default (stop the process) and unblocking the signal. We have to unblock it since we're currently handling that same signal, and the system blocks it automatically while it's being caught. At this point, the system stops the process. It is continued only when it receives (usually from the job-control shell, in response to an interactive =fg= command) a =SIGCONT= signal. We don't catch =SIGCONT=. Its default disposition is to continue the stopped process; when this happens, the program continues as though it returned from the =kill= function. When the program is continued, we reset the disposition for the =SIGTSTP= signal and do whatever terminal processing we want (we could redraw the screen, for example).
 
-*** 10.22. Signal Names and Numbers
+** 10.22. Signal Names and Numbers
 
 
 In this section, we describe how to map between signal numbers and names. Some systems provide the array
@@ -2607,12 +2607,12 @@ The =str2sig= function translates the given name into a signal number. The signa
 
 Note that =sig2str= and =str2sig= depart from common practice and don't set =errno= when they fail.
 
-*** 10.23. Summary
+** 10.23. Summary
 
 
 Signals are used in most nontrivial applications. An understanding of the hows and whys of signal handling is essential to advanced UNIX System programming. This chapter has taken a long and thorough look at UNIX System signals. We started by looking at the warts in previous implementations of signals and how they manifest themselves. We then proceeded to the POSIX.1 reliable-signal concept and all the related functions. Once we covered all these details, we were able to provide implementations of the POSIX.1 =abort=, =system=, and =sleep= functions. We finished with a look at the job-control signals and the ways that we can convert between signal names and signal numbers.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch10ans01][10.1]]* In [[file:part0022.xhtml#ch10fig02][Figure 10.2]], remove the =for (;;)= statement. What happens and why?
@@ -2650,7 +2650,7 @@ What else is wrong with this sequence of code?
 *[[file:part0037.xhtml#ch10ans12][10.12]]* Write a program that calls =fwrite= with a large buffer (about one gigabyte). Before calling =fwrite=, call =alarm= to schedule a signal in 1 second. In your signal handler, print that the signal was caught and return. Does the call to =fwrite= complete? What's happening?
  blocks it automatically while it's being caught. At this point, the system stops the process. It is continued only when it receives (usually from the job-control shell, in response to an interactive =fg= command) a =SIGCONT= signal. We don't catch =SIGCONT=. Its default disposition is to continue the stopped process; when this happens, the program continues as though it returned from the =kill= function. When the program is continued, we reset the disposition for the =SIGTSTP= signal and do whatever terminal processing we want (we could redraw the screen, for example).
 
-*** 10.22. Signal Names and Numbers
+** 10.22. Signal Names and Numbers
 
 
 In this section, we describe how to map between signal numbers and names. Some systems provide the array
@@ -2731,12 +2731,12 @@ The =str2sig= function translates the given name into a signal number. The signa
 
 Note that =sig2str= and =str2sig= depart from common practice and don't set =errno= when they fail.
 
-*** 10.23. Summary
+** 10.23. Summary
 
 
 Signals are used in most nontrivial applications. An understanding of the hows and whys of signal handling is essential to advanced UNIX System programming. This chapter has taken a long and thorough look at UNIX System signals. We started by looking at the warts in previous implementations of signals and how they manifest themselves. We then proceeded to the POSIX.1 reliable-signal concept and all the related functions. Once we covered all these details, we were able to provide implementations of the POSIX.1 =abort=, =system=, and =sleep= functions. We finished with a look at the job-control signals and the ways that we can convert between signal names and signal numbers.
 
-*** Exercises
+** Exercises
 
 
 *[[file:part0037.xhtml#ch10ans01][10.1]]* In [[file:part0022.xhtml#ch10fig02][Figure 10.2]], remove the =for (;;)= statement. What happens and why?

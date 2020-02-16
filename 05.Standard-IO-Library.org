@@ -1,7 +1,7 @@
-** 5. Standard I/O Library
+* 5. Standard I/O Library
 
 
-*** 5.1. Introduction
+** 5.1. Introduction
 
 
 In this chapter, we describe the standard I/O library. This library is specified by the ISO C standard because it has been implemented on many operating systems other than the UNIX System. Additional interfaces are defined as extensions to the ISO C standard by the Single UNIX Specification.
@@ -10,7 +10,7 @@ The standard I/O library handles such details as buffer allocation and performin
 
 The standard I/O library was written by Dennis Ritchie around 1975. It was a major revision of the Portable I/O library written by Mike Lesk. Surprisingly little has changed in the standard I/O library after more than 35 years.
 
-*** 5.2. Streams and FILE Objects
+** 5.2. Streams and FILE Objects
 
 
 In [[file:part0015.xhtml#ch03][Chapter 3]], all the I/O routines centered on file descriptors. When a file is opened, a file descriptor is returned, and that descriptor is then used for all subsequent I/O operations. With the standard I/O library, the discussion centers on /streams/. (Do not confuse the standard I/O term /stream/ with the STREAMS I/O system that is part of System V and was standardized in the XSI STREAMS option in the Single UNIX Specification, but is now marked obsolescent in SUSv4.) When we open or create a file with the standard I/O library, we say that we have associated a stream with the file.
@@ -48,14 +48,14 @@ Application software should never need to examine a =FILE= object. To reference 
 
 Throughout this chapter, we describe the standard I/O library in the context of a UNIX system. As we mentioned, this library has been ported to a wide variety of other operating systems. To provide some insight about how this library can be implemented, we will talk about its typical implementation on a UNIX system.
 
-*** 5.3. Standard Input, Standard Output, and Standard Error
+** 5.3. Standard Input, Standard Output, and Standard Error
 
 
 Three streams are predefined and automatically available to a process: standard input, standard output, and standard error. These streams refer to the same files as the file descriptors =STDIN_FILENO=, =STDOUT_FILENO=, and =STDERR_FILENO=, respectively, which we mentioned in [[file:part0015.xhtml#ch03lev1sec2][Section 3.2]].
 
 These three standard I/O streams are referenced through the predefined file pointers =stdin=, =stdout=, and =stderr=. The file pointers are defined in the =<stdio.h>= header.
 
-*** 5.4. Buffering
+** 5.4. Buffering
 
 
 The goal of the buffering provided by the standard I/O library is to use the minimum number of =read= and =write= calls. (Recall [[file:part0015.xhtml#ch03fig06][Figure 3.6]], which showed the amount of CPU time required to perform I/O using various buffer sizes.) Also, this library tries to do its buffering automatically for each I/O stream, obviating the need for the application to worry about it. Unfortunately, the single aspect of the standard I/O library that generates the most confusion is its buffering.
@@ -123,7 +123,7 @@ Some C library implementations use the value from the =st_blksize= member of the
 
 [[file:part0017.xhtml#ch05fig01][Figure 5.1]] summarizes the actions of these two functions and their various options.
 
-[[../Images/image01337.jpeg]]
+[[./Images/image01337.jpeg]]
 *Figure 5.1* Summary of the =setbuf= and =setvbuf= functions
 
 Be aware that if we allocate a standard I/O buffer as an automatic variable within a function, we have to close the stream before returning from the function. (We'll discuss this point further in [[file:part0019.xhtml#ch07lev1sec8][Section 7.8]].) Also, some implementations use part of the buffer for internal bookkeeping, so the actual number of bytes of data that can be stored in the buffer can be less than /size/. In general, we should let the system choose the buffer size and automatically allocate the buffer. When we do this, the standard I/O library automatically releases the buffer when we close the stream.
@@ -142,7 +142,7 @@ Returns: 0 if OK, =EOF= on error
 
 The =fflush= function causes any unwritten data for the stream to be passed to the kernel. As a special case, if /fp/ is =NULL=, =fflush= causes all output streams to be flushed.
 
-*** 5.5. Opening a Stream
+** 5.5. Opening a Stream
 
 
 The =fopen=, =freopen=, and =fdopen= functions open a standard I/O stream.
@@ -190,10 +190,10 @@ When a file is opened for reading and writing (the plus sign in the /type/), two
 
 We can summarize the six ways to open a stream from [[file:part0017.xhtml#ch05fig02][Figure 5.2]] in [[file:part0017.xhtml#ch05fig03][Figure 5.3]].
 
-[[../Images/image01338.jpeg]]
+[[./Images/image01338.jpeg]]
 *Figure 5.2* The /type/ argument for opening a standard I/O stream
 
-[[../Images/image01339.jpeg]]
+[[./Images/image01339.jpeg]]
 *Figure 5.3* Six ways to open a standard I/O stream
 
 Note that if a new file is created by specifying a /type/ of either =w= or =a=, we are not able to specify the file's access permission bits, as we were able to do with the =open= function and the =creat= function in [[file:part0015.xhtml#ch03][Chapter 3]]. POSIX.1 requires implementations to create the file with the following permissions bit set:
@@ -220,7 +220,7 @@ Any buffered output data is flushed before the file is closed. Any input data th
 
 When a process terminates normally, either by calling the =exit= function directly or by returning from the =main= function, all standard I/O streams with unwritten buffered data are flushed and all open standard I/O streams are closed.
 
-*** 5.6. Reading and Writing a Stream
+** 5.6. Reading and Writing a Stream
 
 
 Once we open a stream, we can choose from among three types of unformatted I/O:
@@ -235,7 +235,7 @@ The term /direct I/O/, from the ISO C standard, is known by many names: binary I
 
 (We describe the formatted I/O functions, such as =printf= and =scanf=, in [[file:part0017.xhtml#ch05lev1sec11][Section 5.11]].)
 
-**** Input Functions
+*** Input Functions
 
 
 Three functions allow us to read one character at a time.
@@ -308,7 +308,7 @@ Pushback is often used when we're reading an input stream and breaking the input
 
 When we push characters back with =ungetc=, they are not written back to the underlying file or device. Instead, they are kept incore in the standard I/O library's buffer for the stream.
 
-**** Output Functions
+*** Output Functions
 
 
 Output functions are available that correspond to each of the input functions we've already described.
@@ -329,7 +329,7 @@ All three return: /c/ if OK, =EOF= on error
 
 As with the input functions, =putchar(c)= is equivalent to =putc(c, stdout)=, and =putc= can be implemented as a macro, whereas =fputc= cannot be implemented as a macro.
 
-*** 5.7. Line-at-a-Time I/O
+** 5.7. Line-at-a-Time I/O
 
 
 Line-at-a-time input is provided by the two functions, =fgets= and =gets=.
@@ -380,7 +380,7 @@ The =puts= function writes the null-terminated string to the standard output, wi
 
 The =puts= function is not unsafe, like its counterpart =gets=. Nevertheless, we'll avoid using it, to prevent having to remember whether it appends a newline. If we always use =fgets= and =fputs=, we know that we always have to deal with the newline character at the end of each line.
 
-*** 5.8. Standard I/O Efficiency
+** 5.8. Standard I/O Efficiency
 
 
 Using the functions from the previous section, we can get an idea of the efficiency of the standard I/O system. The program in [[file:part0017.xhtml#ch05fig04][Figure 5.4]] is like the one in [[file:part0015.xhtml#ch03fig05][Figure 3.5]]: it simply copies standard input to standard output, using =getc= and =putc=. These two routines can be implemented as macros.
@@ -438,7 +438,7 @@ main(void)
 
 Note that we do not close the standard I/O streams explicitly in either [[file:part0017.xhtml#ch05fig04][Figure 5.4]] or [[file:part0017.xhtml#ch05fig05][Figure 5.5]]. Instead, we know that the =exit= function will flush any unwritten data and then close all open streams. (We'll discuss this in [[file:part0020.xhtml#ch08lev1sec5][Section 8.5]].) It is interesting to compare the timing of these three programs with the timing data from [[file:part0015.xhtml#ch03fig06][Figure 3.6]]. We show this data when operating on the same file (98.5 MB with 3 million lines) in [[file:part0017.xhtml#ch05fig06][Figure 5.6]].
 
-[[../Images/image01340.jpeg]]
+[[./Images/image01340.jpeg]]
 *Figure 5.6* Timing results using standard I/O routines
 
 For each of the three standard I/O versions, the user CPU time is larger than the best =read= version from [[file:part0015.xhtml#ch03fig06][Figure 3.6]], because the character-at-a-time standard I/O versions have a loop that is executed 100 million times, and the loop in the line-at-a-time version is executed 3,144,984 times. In the =read= version, its loop is executed only 25,224 times (for a buffer size of 4,096). This difference in clock times stems from the difference in user times and the difference in the times spent waiting for I/O to complete, as the system times are comparable.
@@ -453,7 +453,7 @@ The last point of interest with these timing numbers is that the =fgetc= version
 
 As a disclaimer, you should be aware that these timing results are valid only on the single system they were run on. The results depend on many implementation features that aren't the same on every UNIX system. Nevertheless, having a set of numbers such as these, and explaining why the various versions differ, helps us understand the system better. From this section and [[file:part0015.xhtml#ch03lev1sec9][Section 3.9]], we've learned that the standard I/O library is not much slower than calling the =read= and =write= functions directly. For most nontrivial applications, the largest amount of user CPU time is taken by the application, not by the standard I/O routines.
 
-*** 5.9. Binary I/O
+** 5.9. Binary I/O
 
 
 The functions from [[file:part0017.xhtml#ch05lev1sec6][Section 5.6]] operated with one character at a time, and the functions from [[file:part0017.xhtml#ch05lev1sec7][Section 5.7]] operated with one line at a time. If we're doing binary I/O, we often would like to read or write an entire structure at a time. To do this using =getc= or =putc=, we have to loop through the entire structure, one byte at a time, reading or writing each byte. We can't use the line-at-a-time functions, since =fputs= stops writing when it hits a null byte, and there might be null bytes within the structure. Similarly, =fgets= won't work correctly on input if any of the data bytes are nulls or newlines. Therefore, the following two functions are provided for binary I/O.
@@ -516,7 +516,7 @@ We'll touch on some of these issues when we discuss sockets in [[file:part0028.x
 
 We'll return to the =fread= function in [[file:part0020.xhtml#ch08lev1sec14][Section 8.14]] when we use it to read a binary structure, the UNIX process accounting records.
 
-*** 5.10. Positioning a Stream
+** 5.10. Positioning a Stream
 
 
 There are three ways to position a standard I/O stream:
@@ -583,10 +583,10 @@ Both return: 0 if OK, nonzero on error
 
 The =fgetpos= function stores the current value of the file's position indicator in the object pointed to by /pos/. This value can be used in a later call to =fsetpos= to reposition the stream to that location.
 
-*** 5.11. Formatted I/O
+** 5.11. Formatted I/O
 
 
-**** Formatted Output
+*** Formatted Output
 
 
 Formatted output is handled by the five =printf= functions.
@@ -627,7 +627,7 @@ The format specification controls how the remainder of the arguments will be enc
 
 The flags are summarized in [[file:part0017.xhtml#ch05fig07][Figure 5.7]].
 
-[[../Images/image01341.jpeg]]
+[[./Images/image01341.jpeg]]
 *Figure 5.7* The flags component of a conversion specification
 
 The =fldwidth= component specifies a minimum field width for the conversion. If the conversion results in fewer characters, it is padded with spaces. The field width is a non-negative decimal integer or an asterisk.
@@ -638,12 +638,12 @@ Either the field width or precision (or both) can be an asterisk. In this case, 
 
 The =lenmodifier= component specifies the size of the argument. Possible values are summarized in [[file:part0017.xhtml#ch05fig08][Figure 5.8]].
 
-[[../Images/image01342.jpeg]]
+[[./Images/image01342.jpeg]]
 *Figure 5.8* The length modifier component of a conversion specification
 
 The =convtype= component is not optional. It controls how the argument is interpreted. The various conversion types are summarized in [[file:part0017.xhtml#ch05fig09][Figure 5.9]].
 
-[[../Images/image01343.jpeg]]
+[[./Images/image01343.jpeg]]
 *Figure 5.9* The conversion type component of a conversion specification
 
 With the normal conversion specification, conversions are applied to the arguments in the order they appear after the /format/ argument. An alternative conversion specification syntax allows the arguments to be named explicitly with the sequence /%n$/ representing the /n/th argument. Note, however, that the two syntaxes can't be mixed in the same format specification. With the alternative syntax, arguments are numbered starting at one. If either the field width or precision is to be supplied by an argument, the asterisk syntax is modified to /*m$/, where /m/ specifies the position of the argument supplying the value.
@@ -686,7 +686,7 @@ We use the =vsnprintf= function in the error routines in [[file:part0036.xhtml#a
 
 Refer to Section 7.3 of Kernighan and Ritchie [[[file:part0038.xhtml#bib01_33][1988]]] for additional details on handling variable-length argument lists with ISO Standard C. Be aware that the variable-length argument list routines provided with ISO C---the =<stdarg.h>= header and its associated routines---differ from the =<varargs.h>= routines that were provided with older UNIX systems.
 
-**** Formatted Input
+*** Formatted Input
 
 
 Formatted input is handled by the three =scanf= functions.
@@ -719,7 +719,7 @@ The =fldwidth= component specifies the maximum field width in characters. The =l
 
 The =convtype= field is similar to the conversion type field used by the =printf= family, but there are some differences. One difference is that results that are stored in unsigned types can optionally be signed on input. For example, --1 will scan as 4294967295 into an unsigned integer. [[file:part0017.xhtml#ch05fig10][Figure 5.10]] summarizes the conversion types supported by the =scanf= family of functions.
 
-[[../Images/image01344.jpeg]]
+[[./Images/image01344.jpeg]]
 *Figure 5.10* The conversion type component of a conversion specification
 
 The optional =m= character between the field width and the length modifier is called the /assignment-allocation character/. It can be used with the =%c=, =%s=, and =%[= conversion specifiers to force a memory buffer to be allocated to hold the converted string. In this case, the corresponding argument should be the address of a pointer to which the address of the allocated buffer will be copied. If the call succeeds, the caller is responsible for freeing the buffer by calling the =free= function when the buffer is no longer needed.
@@ -750,7 +750,7 @@ All three return: number of input items assigned,
 
 Refer to your UNIX system manual for additional details on the =scanf= family of functions.
 
-*** 5.12. Implementation Details
+** 5.12. Implementation Details
 
 
 As we've mentioned, under the UNIX System, the standard I/O library ends up calling the I/O routines that we described in [[file:part0015.xhtml#ch03][Chapter 3]]. Each standard I/O stream has an associated file descriptor, and we can obtain the descriptor for a stream by calling =fileno=.
@@ -930,7 +930,7 @@ stream = /etc/passwd, fully buffered, buffer size = 4096
 
 We can see that the default for this system is to have standard input and standard output line buffered when they're connected to a terminal. The line buffer is 1,024 bytes. Note that this doesn't restrict us to 1,024-byte input and output lines; that's just the size of the buffer. Writing a 2,048-byte line to standard output will require two =write= system calls. When we redirect these two streams to regular files, they become fully buffered, with buffer sizes equal to the preferred I/O size---the =st_blksize= value from the =stat= structure---for the file system. We also see that the standard error is always unbuffered, as it should be, and that a regular file defaults to fully buffered.
 
-*** 5.13. Temporary Files
+** 5.13. Temporary Files
 
 
 The ISO C standard defines two functions that are provided by the standard I/O library to assist in creating temporary files.
@@ -1095,7 +1095,7 @@ Segmentation fault
 
 The difference in behavior comes from the way the two template strings are declared. For the first template, the name is allocated on the stack, because we use an array variable. For the second name, however, we use a pointer. In this case, only the memory for the pointer itself resides on the stack; the compiler arranges for the string to be stored in the read-only segment of the executable. When the =mkstemp= function tries to modify the string, a segmentation fault occurs.
 
-*** 5.14. Memory Streams
+** 5.14. Memory Streams
 
 
 As we've seen, the standard I/O library buffers data in memory, so operations such as character-at-a-time I/O and line-at-a-time I/O are more efficient. We've also seen that we can provide our own buffer for the library to use by calling =setbuf= or =setvbuf=. In Version 4, the Single UNIX Specification added support for /memory streams/. These are standard I/O streams for which there are no underlying files, although they are still accessed with =FILE= pointers. All I/O is done by transferring bytes to and from buffers in main memory. As we shall see, even though these streams look like file streams, several features make them more suited for manipulating character strings.
@@ -1119,7 +1119,7 @@ The =fmemopen= function allows the caller to provide a buffer to be used for the
 
 The /type/ argument controls how the stream can be used. The possible values for /type/ are summarized in [[file:part0017.xhtml#ch05fig14][Figure 5.14]].
 
-[[../Images/image01345.jpeg]]
+[[./Images/image01345.jpeg]]
 *Figure 5.14* The /type/ argument for opening a memory stream
 
 Note that these values correspond to the ones for file-based standard I/O streams, but there are some subtle differences. First, whenever a memory stream is opened for append, the current file position is set to the first null byte in the buffer. If the buffer contains no null bytes, then the current position is set to one byte past the end of the buffer. When a stream is not opened for append, the current position is set to the beginning of the buffer. Because the append mode determines the end of the data by the first null byte, memory streams aren't well suited for storing binary data (which might contain null bytes before the end of the data).
@@ -1234,7 +1234,7 @@ We must follow some rules, however, regarding the use of the buffer address and 
 
 Memory streams are well suited for creating strings, because they prevent buffer overflows. They can also provide a performance boost for functions that take standard I/O stream arguments used for temporary files, because memory streams access only main memory instead of a file stored on disk.
 
-*** 5.15. Alternatives to Standard I/O
+** 5.15. Alternatives to Standard I/O
 
 
 The standard I/O library is not perfect. Korn and Vo [[[file:part0038.xhtml#bib01_37][1991]]] list numerous defects---some in the basic design, but most in the various implementations.
@@ -1247,12 +1247,12 @@ Krieger, Stumm, and Unrau [[[file:part0038.xhtml#bib01_38][1992]]] describe anot
 
 Several implementations of the standard I/O library are available in C libraries that were designed for systems with small memory footprints, such as embedded systems. These implementations emphasize modest memory requirements over portability, speed, or functionality. Two such implementations are the uClibc C library (see =http://www.uclibc.org= for more information) and the Newlib C library (=http://sources.redhat.com/newlib=).
 
-*** 5.16. Summary
+** 5.16. Summary
 
 
 The standard I/O library is used by most UNIX applications. In this chapter, we looked at many of the functions provided by this library, as well as at some implementation details and efficiency considerations. Be aware of the buffering that takes place with this library, as this is the area that generates the most problems and confusion.
 
-*** Exercises
+** Exercises
 
 
 5.1 Implement =setbuf= using =setvbuf=.
@@ -1283,7 +1283,7 @@ main(void)
 5.7 BSD-based systems provide a function called =funopen= that allows us to intercept read, write, seek, and close calls on a stream. Use this function to implement =fmemopen= for FreeBSD and Mac OS X.
 Memory streams are well suited for creating strings, because they prevent buffer overflows. They can also provide a performance boost for functions that take standard I/O stream arguments used for temporary files, because memory streams access only main memory instead of a file stored on disk.
 
-*** 5.15. Alternatives to Standard I/O
+** 5.15. Alternatives to Standard I/O
 
 
 The standard I/O library is not perfect. Korn and Vo [[[file:part0038.xhtml#bib01_37][1991]]] list numerous defects---some in the basic design, but most in the various implementations.
@@ -1296,12 +1296,12 @@ Krieger, Stumm, and Unrau [[[file:part0038.xhtml#bib01_38][1992]]] describe anot
 
 Several implementations of the standard I/O library are available in C libraries that were designed for systems with small memory footprints, such as embedded systems. These implementations emphasize modest memory requirements over portability, speed, or functionality. Two such implementations are the uClibc C library (see =http://www.uclibc.org= for more information) and the Newlib C library (=http://sources.redhat.com/newlib=).
 
-*** 5.16. Summary
+** 5.16. Summary
 
 
 The standard I/O library is used by most UNIX applications. In this chapter, we looked at many of the functions provided by this library, as well as at some implementation details and efficiency considerations. Be aware of the buffering that takes place with this library, as this is the area that generates the most problems and confusion.
 
-*** Exercises
+** Exercises
 
 
 5.1 Implement =setbuf= using =setvbuf=.

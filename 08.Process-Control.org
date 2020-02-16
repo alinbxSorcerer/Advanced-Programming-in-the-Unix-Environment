@@ -1,12 +1,12 @@
-** 8. Process Control
+* 8. Process Control
 
 
-*** 8.1. Introduction
+** 8.1. Introduction
 
 
 We now turn to the process control provided by the UNIX System. This includes the creation of new processes, program execution, and process termination. We also look at the various IDs that are the property of the process---real, effective, and saved; user and group IDs---and how they're affected by the process control primitives. Interpreter files and the =system= function are also covered. We conclude the chapter by looking at the process accounting provided by most UNIX systems. This lets us look at the process control functions from a different perspective.
 
-*** 8.2. Process Identifiers
+** 8.2. Process Identifiers
 
 
 Every process has a unique process ID, a non-negative integer. Because the process ID is the only well-known identifier of a process that is always unique, it is often used as a piece of other identifiers, to guarantee uniqueness. For example, applications sometimes include the process ID as part of a filename in an attempt to generate unique filenames.
@@ -53,7 +53,7 @@ Returns: effective group ID of calling process
 
 Note that none of these functions has an error return. We'll return to the parent process ID in the next section when we discuss the =fork= function. The real and effective user and group IDs were discussed in [[file:part0016.xhtml#ch04lev1sec4][Section 4.4]].
 
-*** 8.3. fork Function
+** 8.3. fork Function
 
 
 An existing process can create a new one by calling the =fork= function.
@@ -146,7 +146,7 @@ When we write to standard output, we subtract 1 from the size of =buf= to avoid 
 
 Note the interaction of =fork= with the I/O functions in the program in [[file:part0020.xhtml#ch08fig01][Figure 8.1]]. Recall from [[file:part0015.xhtml#ch03][Chapter 3]] that the =write= function is not buffered. Because =write= is called before the =fork=, its data is written once to standard output. The standard I/O library, however, is buffered. Recall from [[file:part0017.xhtml#ch05lev1sec12][Section 5.12]] that standard output is line buffered if it's connected to a terminal device; otherwise, it's fully buffered. When we run the program interactively, we get only a single copy of the first =printf= line, because the standard output buffer is flushed by the newline. When we redirect standard output to a file, however, we get two copies of the =printf= line. In this second case, the =printf= before the =fork= is called once, but the line remains in the buffer when =fork= is called. This buffer is then copied into the child when the parent's data space is copied to the child. Both the parent and the child now have a standard I/O buffer with this line in it. The second =printf=, right before the =exit=, just appends its data to the existing buffer. When each process terminates, its copy of the buffer is finally flushed.
 
-**** File Sharing
+*** File Sharing
 
 
 When we redirect the standard output of the parent from the program in [[file:part0020.xhtml#ch08fig01][Figure 8.1]], the child's standard output is also redirected. Indeed, one characteristic of =fork= is that all file descriptors that are open in the parent are duplicated in the child. We say “duplicated” because it's as if the =dup= function had been called for each descriptor. The parent and the child share a file table entry for every open descriptor (recall [[file:part0015.xhtml#ch03fig09][Figure 3.9]]).
@@ -228,7 +228,7 @@ Some operating systems combine the operations from step 2---a =fork= followed by
 
 The Single UNIX Specification does include =spawn= interfaces in the advanced real-time option group. These interfaces are not intended to be replacements for =fork= and =exec=, however. They are intended to support systems that have difficulty implementing =fork= efficiently, especially systems without hardware support for memory management.
 
-*** 8.4. vfork Function
+** 8.4. vfork Function
 
 
 The function =vfork= has the same calling sequence and same return values as =fork=, but the semantics of the two functions differ.
@@ -293,7 +293,7 @@ Most modern implementations of =exit= do not bother to close the streams. Becaus
 
 Section 5.6 of McKusick et al. [[[file:part0038.xhtml#bib01_47][1996]]] contains additional information on the implementation issues of =fork= and =vfork=. [[file:part0020.xhtml#ch08que01][Exercises 8.1]] and [[file:part0020.xhtml#ch08que02][8.2]] continue the discussion of =vfork=.
 
-*** 8.5. exit Functions
+** 8.5. exit Functions
 
 
 As we described in [[file:part0019.xhtml#ch07lev1sec3][Section 7.3]], a process can terminate normally in five ways:
@@ -335,7 +335,7 @@ Some systems provide ways to prevent the creation of zombies, as we describe in 
 
 The final condition to consider is this: What happens when a process that has been inherited by =init= terminates? Does it become a zombie? The answer is “no,” because =init= is written so that whenever one of its children terminates, =init= calls one of the =wait= functions to fetch the termination status. By doing this, =init= prevents the system from being clogged by zombies. When we say “one of =init='s children,” we mean either a process that =init= generates directly (such as =getty=, which we describe in [[file:part0021.xhtml#ch09lev1sec2][Section 9.2]]) or a process whose parent has terminated and has been subsequently inherited by =init=.
 
-*** 8.6. wait and waitpid Functions
+** 8.6. wait and waitpid Functions
 
 
 When a process terminates, either normally or abnormally, the kernel notifies the parent by sending the =SIGCHLD= signal to the parent. Because the termination of a child is an asynchronous event---it can happen at any time while the parent is running---this signal is the asynchronous notification from the kernel to the parent. The parent can choose to ignore this signal, or it can provide a function that is called when the signal occurs: a signal handler. The default action for this signal is to be ignored. We describe these options in [[file:part0022.xhtml#ch10][Chapter 10]]. For now, we need to be aware that a process that calls =wait= or =waitpid= can
@@ -564,7 +564,7 @@ $ second child, parent pid = 1
 
 Note that the shell prints its prompt when the original process terminates, which is before the second child prints its parent process ID.
 
-*** 8.7. waitid Function
+** 8.7. waitid Function
 
 
 The Single UNIX Specification includes an additional function to retrieve the exit status of a process. The =waitid= function is similar to =waitpid=, but provides extra flexibility.
@@ -597,7 +597,7 @@ The /infop/ argument is a pointer to a =siginfo= structure. This structure conta
 
 Of the four platforms covered in this book, only Linux 3.2.0, Mac OS X 10.6.8, and Solaris 10 provide support for =waitid=. Note, however, that Mac OS X 10.6.8 doesn't set all the information we expect in the =siginfo= structure.
 
-*** 8.8. wait3 and wait4 Functions
+** 8.8. wait3 and wait4 Functions
 
 
 Most UNIX system implementations provide two additional functions: =wait3= and =wait4=. Historically, these two variants descend from the BSD branch of the UNIX System. The only feature provided by these two functions that isn't provided by the =wait=, =waitid=, and =waitpid= functions is an additional argument that allows the kernel to return a summary of the resources used by the terminated process and all its child processes.
@@ -626,7 +626,7 @@ The resource information includes such statistics as the amount of user CPU time
 
 The =wait3= function was included in earlier versions of the Single UNIX Specification. In Version 2, =wait3= was moved to the legacy category; =wait3= was removed from the specification in Version 3.
 
-*** 8.9. Race Conditions
+** 8.9. Race Conditions
 
 
 For our purposes, a race condition occurs when multiple processes are trying to do something with shared data and the final outcome depends on the order in which the processes run. The =fork= function is a lively breeding ground for race conditions, if any of the logic after the =fork= either explicitly or implicitly depends on whether the parent or child runs first after the =fork=. In general, we cannot predict which process runs first. Even if we knew which process would run first, what happens after that process starts running depends on the system load and the kernel's scheduling algorithm.
@@ -789,7 +789,7 @@ In the program shown in [[file:part0020.xhtml#ch08fig13][Figure 8.13]], the pare
 
 [[file:part0020.xhtml#ch08que04][Exercise 8.4]] continues this example.
 
-*** 8.10. exec Functions
+** 8.10. exec Functions
 
 
 We mentioned in [[file:part0020.xhtml#ch08lev1sec3][Section 8.3]] that one use of the =fork= function is to create a new process (the child) that then causes another program to be executed by calling one of the =exec= functions. When a process calls one of the =exec= functions, that process is completely replaced by the new program, and the new program starts executing at its =main= function. The process ID does not change across an =exec=, because a new process is not created; =exec= merely replaces the current process---its text, data, heap, and stack segments---with a brand-new program from disk.
@@ -1021,7 +1021,7 @@ HOME=/home/sar
 
 Note that the shell prompt appeared before the printing of =argv[0]= from the second =exec=. This occurred because the parent did not =wait= for this child process to finish.
 
-*** 8.11. Changing User IDs and Group IDs
+** 8.11. Changing User IDs and Group IDs
 
 
 In the UNIX System, privileges, such as being able to change the system's notion of the current date, and access control, such as being able to read or write a particular file, are based on user and group IDs. When our programs need additional privileges or need to gain access to resources that they currently aren't allowed to access, they need to change their user or group ID to an ID that has the appropriate privilege or access. Similarly, when our programs need to lower their privileges or prevent access to certain resources, they do so by changing either their user ID or group ID to an ID without the privilege or ability access to the resource.
@@ -1071,7 +1071,7 @@ Note that we can obtain only the current value of the real user ID and the effec
 
 FreeBSD 8.0 and LINUX 3.2.0 provide the =getresuid= and =getresgid= functions, which can be used to get the saved set-user-ID and saved set-group-ID, respectively.
 
-**** setreuid and setregid Functions
+*** setreuid and setregid Functions
 
 
 Historically, BSD supported the swapping of the real user ID and the effective user ID with the =setreuid= function.
@@ -1098,7 +1098,7 @@ Both =setreuid= and =setregid= are included in the XSI option in POSIX.1. As suc
 
 4.3BSD didn't have the saved set-user-ID feature described earlier; it used =setreuid= and =setregid= instead. This allowed an unprivileged user to swap back and forth between the two values. Be aware, however, that when programs that used this feature spawned a shell, they had to set the real user ID to the normal user ID before the =exec=. If they didn't do this, the real user ID could be privileged (from the swap done by =setreuid=) and the shell process could call =setreuid= to swap the two and assume the permissions of the more privileged user. As a defensive programming measure to solve this problem, programs set both the real user ID and the effective user ID to the normal user ID before the call to =exec= in the child.
 
-**** seteuid and setegid Functions
+*** seteuid and setegid Functions
 
 
 POSIX.1 includes the two functions =seteuid= and =setegid=. These functions are similar to =setuid= and =setgid=, but only the effective user ID or effective group ID is changed.
@@ -1120,7 +1120,7 @@ An unprivileged user can set its effective user ID to either its real user ID or
 [[../Images/image01373.jpeg]]
 *Figure 8.19* Summary of all the functions that set the various user IDs
 
-**** Group IDs
+*** Group IDs
 
 
 Everything that we've said so far in this section also applies in a similar fashion to group IDs. The supplementary group IDs are not affected by =setgid=, =setregid=, or =setegid=.
@@ -1169,7 +1169,7 @@ Now the daemon can safely execute commands on our behalf, because it can access 
 
 By using the saved set-user-ID in this fashion, we can use the extra privileges granted to us by the set-user-ID of the program file only when we need elevated privileges. Any other time, however, the process runs with our normal permissions. If we weren't able to switch back to the saved set-user-ID at the end, we might be tempted to retain the extra permissions the whole time we were running (which is asking for trouble).
 
-*** 8.12. Interpreter Files
+** 8.12. Interpreter Files
 
 
 All contemporary UNIX systems support interpreter files. These files are text files that begin with a line of the form
@@ -1345,7 +1345,7 @@ Again, we could wrap all of this in a =/bin/sh= script (that invokes the C shell
 
 None of this would work as we've shown here if the three shells and =awk= didn't use the pound sign as their comment character.
 
-*** 8.13. system Function
+** 8.13. system Function
 
 
 It is convenient to execute a command string from within a program. For example, assume that we want to put a time-and-date stamp into a certain file. We could use the functions described in [[file:part0018.xhtml#ch06lev1sec10][Section 6.10]] to do this: call =time= to get the current calendar time, then call =localtime= to convert it to a broken-down time, then call =strftime= to format the result, and finally write the result to the file. It is much easier, however, to say
@@ -1482,7 +1482,7 @@ while ((lastpid = wait(&status)) != pid && lastpid != -1)
 
 A problem occurs if the process that calls =system= has spawned its own children before calling =system=. Because the =while= statement above keeps looping until the child that was generated by =system= terminates, if any children of the process terminate before the process identified by =pid=, then the process ID and termination status of these other children are discarded by the =while= statement. Indeed, this inability to =wait= for a specific child is one of the reasons given in the POSIX.1 Rationale for including the =waitpid= function. We'll see in [[file:part0027.xhtml#ch15lev1sec3][Section 15.3]] that the same problem occurs with the =popen= and =pclose= functions if the system doesn't provide a =waitpid= function.
 
-**** Set-User-ID Programs
+*** Set-User-ID Programs
 
 
 What happens if we call =system= from a set-user-ID program? Doing so creates a security hole and should never be attempted. [[file:part0020.xhtml#ch08fig24][Figure 8.24]] shows a simple program that just calls =system= for its command-line argument.
@@ -1560,7 +1560,7 @@ If it is running with special permissions---either set-user-ID or set-group-ID--
 
 One reason for this admonition is that =system= invokes the shell to parse the command string, and the shell uses its =IFS= variable as the input field separator. Older versions of the shell didn't reset this variable to a normal set of characters when invoked. As a result, a malicious user could set =IFS= before =system= was called, causing =system= to execute a different program.
 
-*** 8.14. Process Accounting
+** 8.14. Process Accounting
 
 
 Most UNIX systems provide an option to do process accounting. When enabled, the kernel writes an accounting record each time a process terminates. These accounting records typically contain a small amount of binary data with the name of the command, the amount of CPU time used, the user ID and group ID, the starting time, and so on. We'll take a closer look at these accounting records in this section, as it gives us a chance to look at processes again and to use the =fread= function from [[file:part0017.xhtml#ch05lev1sec9][Section 5.9]].
@@ -1790,7 +1790,7 @@ The =ac_flag= values are are what we would expect. The =F= flag is set for all t
 
 As a final note, the first child has a 0 count for the number of characters of I/O, yet this process generated a =core= file. It appears that the I/O required to write the =core= file is not charged to the process.
 
-*** 8.15. User Identification
+** 8.15. User Identification
 
 
 Any process can find out its real and effective user ID and group ID. Sometimes, however, we want to find out the login name of the user who's running the program. We could call =getpwuid(getuid())=, but what if a single user has multiple login names, each with the same user ID? (A person might have multiple entries in the password file with the same user ID to have a different login shell for each entry.) The system normally keeps track of the name we log in under ([[file:part0018.xhtml#ch06lev1sec8][Section 6.8]]), and the =getlogin= function provides a way to fetch that login name.
@@ -1815,7 +1815,7 @@ System V provided the =cuserid= function to return the login name. This function
 
 The environment variable =LOGNAME= is usually initialized with the user's login name by =login=(1) and inherited by the login shell. Realize, however, that a user can modify an environment variable, so we shouldn't use =LOGNAME= to validate the user in any way. Instead, we should use =getlogin=.
 
-*** 8.16. Process Scheduling
+** 8.16. Process Scheduling
 
 
 Historically, the UNIX System provided processes with only coarse control over their scheduling priority. The scheduling policy and priority were determined by the kernel. A process could choose to run with lower priority by adjusting its /nice value/ (thus a process could be “nice” and reduce its share of the CPU by adjusting its nice value). Only a privileged process was allowed to increase its scheduling priority.
@@ -1982,7 +1982,7 @@ When both processes have the same nice value, the parent process gets 50.2% of t
 
 In contrast, when the child has the highest possible nice value (the lowest priority), we see that the parent gets 98.5% of the CPU, while the child gets only 1.5% of the CPU. These values will vary based on how the process scheduler uses the nice value, so a different UNIX system will produce different ratios.
 
-*** 8.17. Process Times
+** 8.17. Process Times
 
 
 In [[file:part0013.xhtml#ch01lev1sec10][Section 1.10]], we described three times that we can measure: wall clock time, user CPU time, and system CPU time. Any process can call the =times= function to obtain these values for itself and any terminated children.
@@ -2122,7 +2122,7 @@ normal termination, exit status = 0
 
 In the first two commands, execution is fast enough to avoid registering any CPU time at the reported resolution. In the third command, however, we run a command that takes enough processing time to note that all the CPU time appears in the child process, which is where the shell and the command execute.
 
-*** 8.18. Summary
+** 8.18. Summary
 
 
 A thorough understanding of the UNIX System's process control is essential for advanced programming. There are only a few functions to master: =fork=, the =exec= family, =_exit=, =wait=, and =waitpid=. These primitives are used in many applications. The =fork= function also gave us an opportunity to look at race conditions.
@@ -2131,7 +2131,7 @@ Our examination of the =system= function and process accounting gave us another 
 
 Given an understanding of a single process and its children, in the next chapter we examine the relationship of a process to other processes---sessions and job control. We then complete our discussion of processes in [[file:part0022.xhtml#ch10][Chapter 10]] when we describe signals.
 
-*** Exercises
+** Exercises
 
 
 8.1 In [[file:part0020.xhtml#ch08fig03][Figure 8.3]], we said that replacing the call to =_exit= with a call to =exit= might cause the standard output to be closed and =printf= to return --1. Modify the program to check whether your implementation behaves this way. If it does not, how can you simulate this behavior?
@@ -2269,7 +2269,7 @@ normal termination, exit status = 0
 
 In the first two commands, execution is fast enough to avoid registering any CPU time at the reported resolution. In the third command, however, we run a command that takes enough processing time to note that all the CPU time appears in the child process, which is where the shell and the command execute.
 
-*** 8.18. Summary
+** 8.18. Summary
     :PROPERTIES:
     :CUSTOM_ID: ch08lev1sec18
     :END:
@@ -2280,7 +2280,7 @@ Our examination of the =system= function and process accounting gave us another 
 
 Given an understanding of a single process and its children, in the next chapter we examine the relationship of a process to other processes---sessions and job control. We then complete our discussion of processes in [[file:part0022.xhtml#ch10][Chapter 10]] when we describe signals.
 
-*** Exercises
+** Exercises
     :PROPERTIES:
     :CUSTOM_ID: ch08lev1sec19
     :END:
